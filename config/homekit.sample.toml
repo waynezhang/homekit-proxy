@@ -1,0 +1,29 @@
+[Bridge]
+Name="HomeKit Proxy"
+Model="Model one"
+Manufacturer="Awesome Manufacturer"
+Firmware="1.0.0"
+
+PinCode="80606066"
+
+############## Light
+
+[[Accessories]]
+Id = 200001
+Name="Living room light"
+Manufacturer="Panasonic"
+Model="-"
+Firmware="1.0.0"
+# https://github.com/brutella/hap/blob/master/accessory
+TypeByte=5
+
+[[Accessories.Services]]
+# https://github.com/brutella/hap/tree/master/service
+TypeString="43"
+
+# https://github.com/brutella/hap/tree/master/characteristic
+[[Accessories.Services.Characteristics]]
+Type="On"
+Poll=5
+Set=""
+Get=""
