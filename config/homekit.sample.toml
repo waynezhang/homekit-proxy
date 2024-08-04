@@ -1,17 +1,81 @@
 [Bridge]
-Name="HomeKit Proxy"
+Name="HKP Dev"
 Model="Model one"
 Manufacturer="Awesome Manufacturer"
 Firmware="1.0.0"
 
-PinCode="80606066"
+PinCode="600800"
+
+############## AC
+
+[[Accessories]]
+Id = 100001
+Name="Living AC Dev"
+Manufacturer="AC Manufacturer"
+Model="-"
+Firmware="1.0.0"
+# https://github.com/brutella/hap/blob/master/accessory
+TypeByte=21
+
+[[Accessories.Services]]
+# https://github.com/brutella/hap/tree/master/service
+TypeString="BC"
+
+# Active
+[[Accessories.Services.Characteristics]]
+Type="Active"
+Poll=5
+Set="echo Set"
+Get="echo 1"
+
+# Current Heater Cooler State
+[[Accessories.Services.Characteristics]]
+Type="CurrentHeaterCoolerState"
+Poll=5
+Set="echo Set"
+Get="echo CurrentHeaterCoolerStateCooling"
+
+# Target Heater Cooler State
+[[Accessories.Services.Characteristics]]
+Type="TargetHeaterCoolerState"
+Poll=5
+Set="echo Set"
+Get="echo TargetHeaterCoolerStateCool"
+
+# Current Temperature
+[[Accessories.Services.Characteristics]]
+Type="CurrentTemperature"
+Poll=5
+Set="echo Set"
+Get="echo 21"
+
+# Rotation Speed
+[[Accessories.Services.Characteristics]]
+Type="RotationSpeed"
+Poll=5
+Set="echo Set"
+Get="echo 1"
+
+# Cooling Threshold Temperature
+[[Accessories.Services.Characteristics]]
+Type="CoolingThresholdTemperature"
+Poll=5
+Set="echo Set"
+Get="echo 10"
+
+# Heating Threshold Temperature
+[[Accessories.Services.Characteristics]]
+Type="HeatingThresholdTemperature"
+Poll=5
+Set="echo Set"
+Get="echo 10"
 
 ############## Light
 
 [[Accessories]]
 Id = 200001
-Name="Living room light"
-Manufacturer="Panasonic"
+Name="Light Dev"
+Manufacturer="Light Manufacturer"
 Model="-"
 Firmware="1.0.0"
 # https://github.com/brutella/hap/blob/master/accessory
@@ -21,9 +85,8 @@ TypeByte=5
 # https://github.com/brutella/hap/tree/master/service
 TypeString="43"
 
-# https://github.com/brutella/hap/tree/master/characteristic
 [[Accessories.Services.Characteristics]]
 Type="On"
 Poll=5
-Set=""
-Get=""
+Set="echo Set"
+Get="echo true"
