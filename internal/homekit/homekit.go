@@ -79,7 +79,7 @@ func parseConfig(cfg *config.Config) (*accessory.Bridge, []*accessory.A, []*char
 			slog.Info("    New Service", "name", s.Type)
 
 			for _, cc := range sc.Characteristics {
-				c := characteristicFromType(cc.Type)
+				c := characteristicFromConfig(cc)
 				if c != nil {
 					s.AddC(c)
 					runners = append(runners, newCharacteristicRunner(

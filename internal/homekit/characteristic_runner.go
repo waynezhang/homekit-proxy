@@ -25,25 +25,12 @@ func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 	}
 
 	r.c.OnCValueUpdate(func(c *characteristic.C, new, old interface{}, req *http.Request) {
-		slog.Info("Remote value changed on "+r.name, "new", new, "req", req)
+		slog.Info("Remote value changed", "name", r.name, "new", new, "type", r.config.Type, "hasReq", req != nil)
 		if req == nil {
 			return
 		}
 
-		param := ""
-		switch any(new).(type) {
-		case int:
-			param = strconv.Itoa(new.(int))
-		case string:
-			param = new.(string)
-		case bool:
-			param = strconv.FormatBool(new.(bool))
-		case float64:
-			param = strconv.FormatFloat(new.(float64), 'f', 2, 64)
-		default:
-			slog.Error("Unsupported value", "value", new)
-		}
-
+		param := valueStringFromCharacteristicType(new, r.config.Type)
 		cmd := r.config.Set + " " + param
 		utils.Exec(cmd)
 	})
@@ -52,11 +39,16 @@ func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 }
 
 func (r *characteristicRunner) start() {
+	cmd := r.config.Get
+	if len(cmd) == 0 {
+		slog.Info("No Getter, skip")
+		return
+	}
+
 	go func() {
 		for {
 			slog.Info("Updating status of " + r.name)
 
-			cmd := r.config.Get
 			output := utils.Exec(cmd)
 
 			val := parseValueFromCharacteristicType(output, r.config.Type)
@@ -71,57 +63,119 @@ func (r *characteristicRunner) start() {
 	}()
 }
 
-func parseValueFromCharacteristicType(output string, typ string) any {
+func valueStringFromCharacteristicType(v any, typ string) string {
 	switch typ {
 	case "Active":
-		i, _ := strconv.Atoi(output)
-		return i
+		return map[any]string{
+			characteristic.ActiveInactive: "ActiveInactive",
+			characteristic.ActiveActive:   "ActiveActive",
+		}[v]
+	case "On":
+		return map[any]string{
+			true:  "true",
+			false: "false",
+		}[v]
+	case "CurrentTemperature", "RotationSpeed", "CoolingThresholdTemperature", "HeatingThresholdTemperature":
+		return strconv.FormatFloat(v.(float64), 'f', 2, 64)
+	case "TargetHeaterCoolerState":
+		return map[any]string{
+			characteristic.TargetHeaterCoolerStateAuto: "TargetHeaterCoolerStateAuto",
+			characteristic.TargetHeaterCoolerStateHeat: "TargetHeaterCoolerStateHeat",
+			characteristic.TargetHeaterCoolerStateCool: "TargetHeaterCoolerStateCool",
+		}[v]
+	case "CurrentHeaterCoolerState":
+		return map[any]string{
+			characteristic.CurrentHeaterCoolerStateInactive: "CurrentHeaterCoolerStateInactive",
+			characteristic.CurrentHeaterCoolerStateIdle:     "CurrentHeaterCoolerStateIdle",
+			characteristic.CurrentHeaterCoolerStateHeating:  "CurrentHeaterCoolerStateHeating",
+			characteristic.CurrentHeaterCoolerStateCooling:  "CurrentHeaterCoolerStateCooling",
+		}[v]
+	default:
+	}
+	return ""
+}
+
+func parseValueFromCharacteristicType(v string, typ string) any {
+	switch typ {
+	case "Active":
+		return map[string]interface{}{
+			"ActiveInactive": characteristic.ActiveInactive,
+			"ActiveActive":   characteristic.ActiveActive,
+		}[v]
 	case "On":
 		return map[string]interface{}{
 			"true":  true,
 			"false": false,
-		}[output]
-	case "CurrentTemperature", "TargetTemperature", "RotationSpeed", "CoolingThresholdTemperature", "HeatingThresholdTemperature":
-		f, _ := strconv.ParseFloat(output, 64)
+		}[v]
+	case "CurrentTemperature", "RotationSpeed", "CoolingThresholdTemperature", "HeatingThresholdTemperature":
+		f, _ := strconv.ParseFloat(v, 64)
 		return f
 	case "TargetHeaterCoolerState":
 		return map[string]interface{}{
 			"TargetHeaterCoolerStateAuto": characteristic.TargetHeaterCoolerStateAuto,
 			"TargetHeaterCoolerStateHeat": characteristic.TargetHeaterCoolerStateHeat,
 			"TargetHeaterCoolerStateCool": characteristic.TargetHeaterCoolerStateCool,
-		}[output]
+		}[v]
 	case "CurrentHeaterCoolerState":
 		return map[string]interface{}{
 			"CurrentHeaterCoolerStateInactive": characteristic.CurrentHeaterCoolerStateInactive,
 			"CurrentHeaterCoolerStateIdle":     characteristic.CurrentHeaterCoolerStateIdle,
 			"CurrentHeaterCoolerStateHeating":  characteristic.CurrentHeaterCoolerStateHeating,
 			"CurrentHeaterCoolerStateCooling":  characteristic.CurrentHeaterCoolerStateCooling,
-		}[output]
+		}[v]
 	default:
 	}
 	return nil
 }
 
-func characteristicFromType(typ string) *characteristic.C {
-	switch typ {
+func characteristicFromConfig(cc config.CharacteristicsConfig) *characteristic.C {
+	switch cc.Type {
 	case "Active":
 		return characteristic.NewActive().C
 	case "On":
 		return characteristic.NewOn().C
 	case "CurrentTemperature":
 		return characteristic.NewCurrentTemperature().C
-	case "TargetTemperature":
-		return characteristic.NewTargetTemperature().C
 	case "TargetHeaterCoolerState":
 		return characteristic.NewTargetHeaterCoolerState().C
 	case "CurrentHeaterCoolerState":
 		return characteristic.NewCurrentHeaterCoolerState().C
 	case "RotationSpeed":
-		return characteristic.NewRotationSpeed().C
+		c := characteristic.NewRotationSpeed()
+		if cc.Min > 0 {
+			c.SetMinValue(float64(cc.Min))
+		}
+		if cc.Max > 0 {
+			c.SetMaxValue(float64(cc.Max))
+		}
+		if cc.Step > 0 {
+			c.SetStepValue(float64(cc.Step))
+		}
+		return c.C
 	case "CoolingThresholdTemperature":
-		return characteristic.NewCoolingThresholdTemperature().C
+		c := characteristic.NewCoolingThresholdTemperature()
+		if cc.Min > 0 {
+			c.SetMinValue(float64(cc.Min))
+		}
+		if cc.Max > 0 {
+			c.SetMaxValue(float64(cc.Max))
+		}
+		if cc.Step > 0 {
+			c.SetStepValue(float64(cc.Step))
+		}
+		return c.C
 	case "HeatingThresholdTemperature":
-		return characteristic.NewHeatingThresholdTemperature().C
+		c := characteristic.NewHeatingThresholdTemperature()
+		if cc.Min > 0 {
+			c.SetMinValue(float64(cc.Min))
+		}
+		if cc.Max > 0 {
+			c.SetMaxValue(float64(cc.Max))
+		}
+		if cc.Step > 0 {
+			c.SetStepValue(float64(cc.Step))
+		}
+		return c.C
 	default:
 		return nil
 	}

@@ -38,6 +38,9 @@ type CharacteristicsConfig struct {
 	Poll int
 	Set  string
 	Get  string
+	Min  int
+	Max  int
+	Step int
 }
 
 func Parse(file string) Config {
