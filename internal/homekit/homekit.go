@@ -8,7 +8,6 @@ import (
 
 	"github.com/brutella/hap"
 	"github.com/brutella/hap/accessory"
-	"github.com/brutella/hap/characteristic"
 	"github.com/brutella/hap/service"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
@@ -80,7 +79,7 @@ func parseConfig(cfg *config.Config) (*accessory.Bridge, []*accessory.A, []*char
 			slog.Info("    New Service", "name", s.Type)
 
 			for _, cc := range sc.Characteristics {
-				c := characteristicFromConfig(&cc)
+				c := characteristicFromType(cc.Type)
 				if c != nil {
 					s.AddC(c)
 					runners = append(runners, newCharacteristicRunner(
@@ -110,21 +109,4 @@ func accessoryFromConfig(ac *config.AccessoriesConfig) *accessory.A {
 		},
 		byte(ac.TypeByte),
 	)
-}
-
-func characteristicFromConfig(cc *config.CharacteristicsConfig) *characteristic.C {
-	switch cc.Type {
-	case "Active":
-		return characteristic.NewActive().C
-	case "On":
-		return characteristic.NewOn().C
-	case "CurrentTemperature":
-		return characteristic.NewCurrentTemperature().C
-	case "TargetHeaterCoolerState":
-		return characteristic.NewTargetHeaterCoolerState().C
-	case "CurrentHeaterCoolerState":
-		return characteristic.NewCurrentHeaterCoolerState().C
-	default:
-		return nil
-	}
 }

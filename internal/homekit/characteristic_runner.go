@@ -59,53 +59,70 @@ func (r *characteristicRunner) start() {
 			cmd := r.config.Get
 			output := utils.Exec(cmd)
 
-			var val interface{}
-			if len(output) > 0 {
-				switch r.config.Type {
-				case "Active":
-					if i, e := strconv.Atoi(output); e == nil {
-						val = i
-					}
-				case "On":
-					if output == "true" {
-						val = true
-					} else {
-						val = false
-					}
-				case "CurrentTemperature":
-					if f, e := strconv.ParseFloat(output, 64); e == nil {
-						val = f
-					}
-				case "TargetHeaterCoolerState":
-					switch output {
-					case "Auto":
-						val = characteristic.TargetHeaterCoolerStateAuto
-					case "Cool":
-						val = characteristic.TargetHeaterCoolerStateCool
-					case "Heat":
-						val = characteristic.TargetHeaterCoolerStateHeat
-					}
-				case "CurrentHeaterCoolerState":
-					switch output {
-					case "Inactive":
-						val = characteristic.CurrentHeaterCoolerStateInactive
-					case "Idle":
-						val = characteristic.CurrentHeaterCoolerStateIdle
-					case "Heating":
-						val = characteristic.CurrentHeaterCoolerStateHeating
-					case "Cooling":
-						val = characteristic.CurrentHeaterCoolerStateCooling
-					}
-				default:
-				}
-				if val != nil {
-					slog.Info("Setting value", "name", r.name, "val", val)
-					r.c.SetValueRequest(val, nil)
-				} else {
-					slog.Error("No value parsed")
-				}
+			val := parseValueFromCharacteristicType(output, r.config.Type)
+			if val != nil {
+				slog.Info("Setting value", "name", r.name, "val", val)
+				r.c.SetValueRequest(val, nil)
+			} else {
+				slog.Error("No value parsed")
 			}
 			time.Sleep(time.Duration(r.config.Poll) * time.Second)
 		}
 	}()
+}
+
+func parseValueFromCharacteristicType(output string, typ string) any {
+	switch typ {
+	case "Active":
+		i, _ := strconv.Atoi(output)
+		return i
+	case "On":
+		return map[string]interface{}{
+			"true":  true,
+			"false": false,
+		}[output]
+	case "CurrentTemperature", "TargetTemperature", "RotationSpeed", "CoolingThresholdTemperature", "HeatingThresholdTemperature":
+		f, _ := strconv.ParseFloat(output, 64)
+		return f
+	case "TargetHeaterCoolerState":
+		return map[string]interface{}{
+			"TargetHeaterCoolerStateAuto": characteristic.TargetHeaterCoolerStateAuto,
+			"TargetHeaterCoolerStateHeat": characteristic.TargetHeaterCoolerStateHeat,
+			"TargetHeaterCoolerStateCool": characteristic.TargetHeaterCoolerStateCool,
+		}[output]
+	case "CurrentHeaterCoolerState":
+		return map[string]interface{}{
+			"CurrentHeaterCoolerStateInactive": characteristic.CurrentHeaterCoolerStateInactive,
+			"CurrentHeaterCoolerStateIdle":     characteristic.CurrentHeaterCoolerStateIdle,
+			"CurrentHeaterCoolerStateHeating":  characteristic.CurrentHeaterCoolerStateHeating,
+			"CurrentHeaterCoolerStateCooling":  characteristic.CurrentHeaterCoolerStateCooling,
+		}[output]
+	default:
+	}
+	return nil
+}
+
+func characteristicFromType(typ string) *characteristic.C {
+	switch typ {
+	case "Active":
+		return characteristic.NewActive().C
+	case "On":
+		return characteristic.NewOn().C
+	case "CurrentTemperature":
+		return characteristic.NewCurrentTemperature().C
+	case "TargetTemperature":
+		return characteristic.NewTargetTemperature().C
+	case "TargetHeaterCoolerState":
+		return characteristic.NewTargetHeaterCoolerState().C
+	case "CurrentHeaterCoolerState":
+		return characteristic.NewCurrentHeaterCoolerState().C
+	case "RotationSpeed":
+		return characteristic.NewRotationSpeed().C
+	case "CoolingThresholdTemperature":
+		return characteristic.NewCoolingThresholdTemperature().C
+	case "HeatingThresholdTemperature":
+		return characteristic.NewHeatingThresholdTemperature().C
+	default:
+		return nil
+	}
 }
