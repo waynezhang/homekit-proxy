@@ -2,9 +2,11 @@ package homekit
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/brutella/hap"
 	"github.com/brutella/hap/accessory"
@@ -47,6 +49,8 @@ func (m *HMManager) Start(dbPath string) {
 		r.start()
 	}
 	startHealthCheckHandler(server)
+	startAPIHandler(server, accessories)
+
 	err = server.ListenAndServe(context.Background())
 	utils.CheckFatalError(err, "Failed to start server")
 }
@@ -54,6 +58,40 @@ func (m *HMManager) Start(dbPath string) {
 func startHealthCheckHandler(server *hap.Server) {
 	server.ServeMux().HandleFunc("/health", func(res http.ResponseWriter, req *http.Request) {
 		res.Write([]byte("OK"))
+	})
+}
+
+func startAPIHandler(server *hap.Server, as []*accessory.A) {
+	server.ServeMux().HandleFunc("/s/all", func(res http.ResponseWriter, req *http.Request) {
+		var w = func(s string) {
+			res.Write([]byte(s))
+		}
+		for _, a := range as {
+			w("- ")
+			w(strconv.FormatUint(a.Id, 10))
+			w("\n")
+			w("k ")
+			w(a.Info.Name.Value())
+			w("\n")
+			for _, s := range a.Ss {
+				w("  - ")
+				w(strconv.FormatUint(s.Id, 10))
+				w("\n")
+				for _, c := range s.Cs {
+					w("    - ")
+					w(strconv.FormatUint(c.Id, 10))
+					w("\n")
+					w("      ")
+					w(c.Type)
+					w(":\t")
+					w(fmt.Sprintf("%v", c.Val))
+					w("\n")
+				}
+			}
+			w("\n")
+		}
+	})
+	server.ServeMux().HandleFunc("/s/", func(res http.ResponseWriter, req *http.Request) {
 	})
 }
 
