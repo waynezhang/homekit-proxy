@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-func Exec(cmd string) string {
+func Exec(cmd string) (string, error) {
 	output, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
 		slog.Error("Error to exec", "cmd", cmd, "err", err)
-		return ""
+		return "", err
 	}
 	s := strings.TrimSpace(string(output))
 	slog.Info("Exec", "cmd", cmd, "out", s)
-	return s
+	return s, nil
 }

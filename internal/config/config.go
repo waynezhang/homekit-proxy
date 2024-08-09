@@ -8,6 +8,7 @@ import (
 type Config struct {
 	Bridge      BridgeConfig
 	Accessories []AccessoriesConfig
+	Automations []AutomationConfig
 }
 
 type BridgeConfig struct {
@@ -41,6 +42,13 @@ type CharacteristicsConfig struct {
 	Min  int
 	Max  int
 	Step int
+}
+
+type AutomationConfig struct {
+	Name   string
+	Cron   string
+	Cmd    string
+	Margin int
 }
 
 func Parse(file string) Config {

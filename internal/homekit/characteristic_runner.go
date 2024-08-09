@@ -12,9 +12,10 @@ import (
 )
 
 type characteristicRunner struct {
-	name   string
-	config *config.CharacteristicsConfig
-	c      *characteristic.C
+	name      string
+	config    *config.CharacteristicsConfig
+	c         *characteristic.C
+	lastValue any
 }
 
 func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, c *characteristic.C) *characteristicRunner {
@@ -25,7 +26,7 @@ func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 	}
 
 	r.c.OnCValueUpdate(func(c *characteristic.C, new, old interface{}, req *http.Request) {
-		slog.Info("Remote value changed", "name", r.name, "new", new, "type", r.config.Type, "hasReq", req != nil)
+		slog.Info("[Characteristcs] Remote value changed", "name", r.name, "new", new, "type", r.config.Type, "hasReq", req != nil)
 		if req == nil {
 			return
 		}
@@ -41,22 +42,25 @@ func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 func (r *characteristicRunner) start() {
 	cmd := r.config.Get
 	if len(cmd) == 0 {
-		slog.Info("No Getter, skip")
+		slog.Info("[Characteristcs] No Getter, skip")
 		return
 	}
 
 	go func() {
 		for {
-			slog.Info("Updating status of " + r.name)
+			slog.Info("[Characteristcs] Updating status of " + r.name)
 
-			output := utils.Exec(cmd)
+			output, _ := utils.Exec(cmd)
 
 			val := parseValueFromCharacteristicType(output, r.config.Type)
 			if val != nil {
-				slog.Info("Setting value", "name", r.name, "val", val)
-				r.c.SetValueRequest(val, nil)
+				if r.lastValue != val {
+					slog.Info("[Characteristcs] Setting remote value", "name", r.name, "val", val)
+					r.lastValue = val
+					r.c.SetValueRequest(val, nil)
+				}
 			} else {
-				slog.Error("No value parsed")
+				slog.Error("[Characteristcs] No value parsed")
 			}
 			time.Sleep(time.Duration(r.config.Poll) * time.Second)
 		}

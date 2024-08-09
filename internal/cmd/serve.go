@@ -7,7 +7,7 @@ import (
 	"github.com/waynezhang/homekit-proxy/internal/homekit"
 )
 
-var ServeCmd = func() *cobra.Command {
+func init() {
 	var dbPath string
 	var configFile string
 
@@ -22,11 +22,11 @@ var ServeCmd = func() *cobra.Command {
 	cmd.Flags().StringVarP(&dbPath, "db", "d", "./db", "Database path")
 	cmd.Flags().StringVarP(&configFile, "config", "c", constants.DefaultConfigFile, "Config file path")
 
-	return cmd
-}()
+	RootCmd.AddCommand(cmd)
+}
 
-func serve(file string, dbPath string) {
-	config := config.Parse(file)
-	hm := homekit.New(&config)
-	hm.Start(dbPath)
+func serve(cfgFile string, dbPath string) {
+	config := config.Parse(cfgFile)
+	hm := homekit.New(&config, dbPath)
+	hm.Start()
 }

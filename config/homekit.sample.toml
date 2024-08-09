@@ -90,3 +90,9 @@ Type="On"
 Poll=5
 Set="echo Set"
 Get="echo true"
+
+[[Automations]]
+Name="Turn off all lights"
+Cron="0 * * * * *"
+Cmd="echo 'Running'"
+Margin=5

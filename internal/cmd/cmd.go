@@ -8,8 +8,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func Execute() {
+var RootCmd = func() *cobra.Command {
 	updateLogger(slog.LevelWarn)
+
 	var verbose bool
 	var rootCmd = &cobra.Command{
 		Use:   "homekit-proxy",
@@ -23,14 +24,10 @@ func Execute() {
 			}
 		},
 	}
-
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "verbose output")
 
-	rootCmd.AddCommand(ServeCmd)
-	rootCmd.AddCommand(VersionCmd)
-
-	_ = rootCmd.Execute()
-}
+	return rootCmd
+}()
 
 func updateLogger(level slog.Leveler) {
 	slog.SetDefault(slog.New(console.NewHandler(os.Stderr, &console.HandlerOptions{Level: level})))
