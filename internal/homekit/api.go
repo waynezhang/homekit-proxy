@@ -31,12 +31,15 @@ func handleGetAll(m *HMManager) {
 		Value any    `json:"value"`
 	}
 	type stat struct {
+		Now             time.Time              `json:"now"`
 		Characteristics []*characteristicsStat `json:"characteristics"`
 		Automations     []*automationStat      `json:"automations"`
 	}
 
 	m.server.ServeMux().HandleFunc("/s/all", func(res http.ResponseWriter, req *http.Request) {
-		st := stat{}
+		st := stat{
+			Now: time.Now(),
+		}
 
 		csts := []*characteristicsStat{}
 		for _, a := range m.root.runners {
