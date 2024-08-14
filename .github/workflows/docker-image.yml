@@ -1,4 +1,4 @@
-ame: Publish Docker Image
+name: Publish Docker Image
 on:
   push:
     branches: ['main']
