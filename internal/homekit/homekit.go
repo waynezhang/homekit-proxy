@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/brutella/hap"
+	"github.com/fsnotify/fsnotify"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
@@ -15,10 +16,54 @@ type HMManager struct {
 	server      *hap.Server
 	root        *rootBridge
 	automations []*automationRunner
+	cancel      context.CancelFunc
 }
 
-func New(cfg *config.Config, dbPath string) *HMManager {
-	root := parseConfig(cfg)
+const (
+	serverEventServerInit serverEvent = iota + 1
+	serverEventServerPreparing
+	serverEventServerRunning
+	serverEventServerStopped
+	serverEventConfigFileChanged
+)
+
+type serverEvent int
+
+func Serve(cfgFile string, dbPath string) {
+	ch := make(chan serverEvent, 1)
+	ch <- serverEventServerInit
+	defer close(ch)
+
+	var m *HMManager
+	for {
+		select {
+		case e := <-ch:
+			slog.Info("[State] State changed", "state", e)
+			switch e {
+			case serverEventServerInit:
+				go func() {
+					startWatchingConfigFile(cfgFile, ch)
+				}()
+				ch <- serverEventServerPreparing
+			case serverEventServerPreparing:
+				m = new(cfgFile, dbPath)
+				go func() {
+					m.start()
+					ch <- serverEventServerStopped
+				}()
+				ch <- serverEventServerRunning
+			case serverEventServerStopped:
+				ch <- serverEventServerPreparing
+			case serverEventConfigFileChanged:
+				m.cancel()
+			}
+		}
+	}
+}
+
+func new(cfgFile string, dbPath string) *HMManager {
+	cfg := config.Parse(cfgFile)
+	root := parseConfig(&cfg)
 	automations := automationRunnersFromConfig(cfg.Automations)
 
 	var w = slog.Info
@@ -57,7 +102,10 @@ func New(cfg *config.Config, dbPath string) *HMManager {
 	}
 }
 
-func (m *HMManager) Start() {
+func (m *HMManager) start() {
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+
 	for _, r := range m.root.runners {
 		r.start()
 	}
@@ -68,6 +116,41 @@ func (m *HMManager) Start() {
 	m.startHealthCheckHandler()
 	m.startAPIHandler()
 
-	err := m.server.ListenAndServe(context.Background())
-	utils.CheckFatalError(err, "[Server] Failed to start server")
+	err := m.server.ListenAndServe(ctx)
+	slog.Info("[Server] Server is stopped", "reason", err)
+}
+
+func (m *HMManager) stop() {
+	m.cancel()
+}
+
+func startWatchingConfigFile(cfgFile string, ch chan serverEvent) {
+	watcher, err := fsnotify.NewWatcher()
+	utils.CheckFatalError(err, "[FS] Failed to start filesystem watcher")
+	defer watcher.Close()
+
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Has(fsnotify.Write) {
+					slog.Info("[FS] Config file changed")
+					ch <- serverEventConfigFileChanged
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				slog.Error("[FS] Received error", "err", err)
+			}
+		}
+
+	}()
+
+	err = watcher.Add(cfgFile)
+	utils.CheckFatalError(err, "[FS] Failed to watch file")
+	<-make(chan struct{})
 }
