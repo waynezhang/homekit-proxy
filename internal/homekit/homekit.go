@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/brutella/hap"
-	"github.com/fsnotify/fsnotify"
+	"github.com/radovskyb/watcher"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
@@ -125,32 +125,24 @@ func (m *HMManager) stop() {
 }
 
 func startWatchingConfigFile(cfgFile string, ch chan serverEvent) {
-	watcher, err := fsnotify.NewWatcher()
-	utils.CheckFatalError(err, "[FS] Failed to start filesystem watcher")
-	defer watcher.Close()
+	w := watcher.New()
+	w.SetMaxEvents(1)
+	w.FilterOps(watcher.Write)
+	err := w.Add(cfgFile)
+	utils.CheckFatalError(err, "[FS] Failed to watch file")
 
 	go func() {
 		for {
 			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-				if event.Has(fsnotify.Write) {
-					slog.Info("[FS] Config file changed")
-					ch <- serverEventConfigFileChanged
-				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					return
-				}
+			case event := <-w.Event:
+				slog.Info("[FS] Config file changed", "event", event)
+				ch <- serverEventConfigFileChanged
+			case err := <-w.Error:
 				slog.Error("[FS] Received error", "err", err)
 			}
 		}
-
 	}()
 
-	err = watcher.Add(cfgFile)
-	utils.CheckFatalError(err, "[FS] Failed to watch file")
-	<-make(chan struct{})
+	err = w.Start(time.Millisecond * 100)
+	utils.CheckFatalError(err, "[FS] Failed to start watching file")
 }
