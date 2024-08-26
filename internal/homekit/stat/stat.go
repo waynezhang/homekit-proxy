@@ -9,7 +9,7 @@ type AutomationStat struct {
 	Name      string    `json:"name"`
 	Cmd       string    `json:"cmd"`
 	Cron      string    `json:"cron"`
-	Margin    int       `json:"margin"`
+	Tolerance int       `json:"tolerance"`
 	LastRun   time.Time `json:"last_run"`
 	LastError string    `json:"last_error"`
 	NextRun   time.Time `json:"next_run"`

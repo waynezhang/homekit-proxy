@@ -93,7 +93,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 			Name:      a.config.Name,
 			Cmd:       a.config.Cmd,
 			Cron:      a.config.Cron,
-			Margin:    a.config.Margin,
+			Tolerance: a.config.Tolerance,
 			LastRun:   a.lastRun,
 			LastError: errToString(a.lastError),
 			NextRun:   a.nextRun,

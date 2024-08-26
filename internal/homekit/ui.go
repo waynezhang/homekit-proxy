@@ -152,11 +152,11 @@ func automationsList(astats []*stat.AutomationStat) g.Node {
 				Class("dib mr4 mt2"),
 				Dt(
 					Class("b mb1 gray"),
-					g.Text("Margin:"),
+					g.Text("Tolerance:"),
 				),
 				Dd(
 					Class("pa0 ma0"),
-					g.Text(strconv.Itoa(ast.Margin)),
+					g.Text(strconv.Itoa(ast.Tolerance)),
 				),
 			),
 			Dl(
@@ -238,31 +238,3 @@ const (
 	}
 	`
 )
-
-/*
-const (
-	initScript string = `
-	document.addEventListener('alpine:init', () => {
-		Alpine.magic('json', () => async (url, method, data) => {
-			return _fetch(url, method, data)
-		})
-		Alpine.magic('update_c', () => async (id, value) => {
-			return _fetch("/s/c/" + id, "POST", {"value": value})
-		})
-	})
-
-	async function _fetch(url, method, data) {
-		const resp = await fetch(url, {
-			method: method || "GET",
-			headers: { "Content-Type": "application/json" },
-			body: data ? JSON.stringify(data) : null,
-		})
-		if (!resp.ok) {
-			const json = await resp.json()
-			throw Error(json.message)
-		}
-		return await resp.json()
-	}
-	`
-)
-*/

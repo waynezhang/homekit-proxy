@@ -95,4 +95,4 @@ Get="echo true"
 Name="Turn off all lights"
 Cron="0 * * * * *"
 Cmd="echo 'Running'"
-Margin=5
+Tolerance=5

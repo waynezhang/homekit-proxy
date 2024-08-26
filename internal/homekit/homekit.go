@@ -73,7 +73,7 @@ func new(cfgFile string, dbPath string) *HMManager {
 	}
 	w("[Config] Automations:")
 	for _, a := range automations {
-		w("[Config]   Rule", "name", a.config.Name, "cmd", a.config.Cmd, "cron", a.config.Cron, "margin", a.config.Margin)
+		w("[Config]   Rule", "name", a.config.Name, "cmd", a.config.Cmd, "cron", a.config.Cron, "tolerance", a.config.Tolerance)
 	}
 
 	store := hap.NewFsStore(dbPath)

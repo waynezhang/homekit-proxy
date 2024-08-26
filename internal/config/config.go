@@ -45,10 +45,10 @@ type CharacteristicsConfig struct {
 }
 
 type AutomationConfig struct {
-	Name   string
-	Cron   string
-	Cmd    string
-	Margin int
+	Name      string
+	Cron      string
+	Cmd       string
+	Tolerance int
 }
 
 func Parse(file string) Config {

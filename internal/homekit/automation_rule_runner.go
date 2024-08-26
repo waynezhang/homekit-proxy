@@ -21,7 +21,7 @@ type automationRunner struct {
 func (r *automationRunner) start(t time.Time) {
 	now := time.Now()
 
-	next, ref, err := nextRunTime(r.config.Cron, r.config.Margin, t)
+	next, ref, err := nextRunTime(r.config.Cron, r.config.Tolerance, t)
 	if err != nil {
 		slog.Error("[Automation] Failed to start automation rule", "name", r.config.Name, "err", err)
 		return
@@ -45,16 +45,16 @@ func (r *automationRunner) start(t time.Time) {
 	}()
 }
 
-func nextRunTime(cron string, margin int, ref time.Time) (time.Time, time.Time, error) {
+func nextRunTime(cron string, tolerance int, ref time.Time) (time.Time, time.Time, error) {
 	next, err := cadence.Next(cron, ref)
 	if err != nil {
 		return next, next, err
 	}
 
 	m := 0
-	if margin != 0 {
+	if tolerance != 0 {
 		random := rand.New(rand.NewSource(ref.UnixNano()))
-		m = random.Intn(margin*2) - margin
+		m = random.Intn(tolerance*2) - tolerance
 	}
 
 	runTime := next.Add(time.Duration(m) * time.Second)
