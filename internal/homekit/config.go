@@ -25,6 +25,7 @@ func parseConfig(cfg *config.Config) *rootBridge {
 
 	accessories := []*accessory.A{}
 	runners := []*characteristicRunner{}
+	nextId := 1
 	for _, ac := range cfg.Accessories {
 		a := accessoryFromConfig(&ac)
 		accessories = append(accessories, a)
@@ -44,7 +45,10 @@ func parseConfig(cfg *config.Config) *rootBridge {
 				s.AddC(c)
 
 				name := ac.Name + " - " + cc.Type
-				runners = append(runners, newCharacteristicRunner(name, &cc, c))
+				runner := newCharacteristicRunner(name, &cc, c)
+				runner.id = nextId
+				nextId++
+				runners = append(runners, runner)
 			}
 		}
 	}
@@ -71,8 +75,11 @@ func accessoryFromConfig(ac *config.AccessoriesConfig) *accessory.A {
 func automationRunnersFromConfig(cs []config.AutomationConfig) []*automationRunner {
 	runners := []*automationRunner{}
 
+	nextId := 1
 	for _, a := range cs {
 		r := automationRunner{config: &a}
+		r.id = nextId
+		nextId++
 		runners = append(runners, &r)
 	}
 

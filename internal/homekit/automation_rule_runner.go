@@ -11,6 +11,7 @@ import (
 )
 
 type automationRunner struct {
+	id        int
 	config    *config.AutomationConfig
 	lastRun   time.Time
 	lastError error

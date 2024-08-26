@@ -115,6 +115,7 @@ func (m *HMManager) start() {
 
 	m.startHealthCheckHandler()
 	m.startAPIHandler()
+	m.startUIHandler()
 
 	err := m.server.ListenAndServe(ctx)
 	slog.Info("[Server] Server is stopped", "reason", err)

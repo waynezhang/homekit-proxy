@@ -2,11 +2,18 @@ package characteristics
 
 import (
 	"github.com/brutella/hap/characteristic"
+	g "github.com/maragudk/gomponents"
 	"github.com/waynezhang/homekit-proxy/internal/config"
+	"github.com/waynezhang/homekit-proxy/internal/homekit/stat"
 )
 
 func init() {
-	addParser("CurrentHeaterCoolerState", func(v string) any {
+	const cType = "CurrentHeaterCoolerState"
+
+	registerCConstructor(cType, func(cc config.CharacteristicsConfig) *characteristic.C {
+		return characteristic.NewCurrentHeaterCoolerState().C
+	})
+	registerConverterFromCommandLine(cType, func(v string) any {
 		return map[string]interface{}{
 			"CurrentHeaterCoolerStateInactive": characteristic.CurrentHeaterCoolerStateInactive,
 			"CurrentHeaterCoolerStateIdle":     characteristic.CurrentHeaterCoolerStateIdle,
@@ -14,7 +21,7 @@ func init() {
 			"CurrentHeaterCoolerStateCooling":  characteristic.CurrentHeaterCoolerStateCooling,
 		}[v]
 	})
-	addConverter("CurrentHeaterCoolerState", func(v any) string {
+	registerConverterToCommandLine(cType, func(v any) string {
 		return map[any]string{
 			characteristic.CurrentHeaterCoolerStateInactive: "CurrentHeaterCoolerStateInactive",
 			characteristic.CurrentHeaterCoolerStateIdle:     "CurrentHeaterCoolerStateIdle",
@@ -22,7 +29,17 @@ func init() {
 			characteristic.CurrentHeaterCoolerStateCooling:  "CurrentHeaterCoolerStateCooling",
 		}[v]
 	})
-	addCConstructor("CurrentHeaterCoolerState", func(cc config.CharacteristicsConfig) *characteristic.C {
-		return characteristic.NewCurrentHeaterCoolerState().C
+	registerHTMLElBuilderFunc(cType, func(name string, v string, id string, cst *stat.CharacteristicsStat) g.Node {
+		return radioGroup(
+			name,
+			[]string{
+				"CurrentHeaterCoolerStateInactive",
+				"CurrentHeaterCoolerStateIdle",
+				"CurrentHeaterCoolerStateHeating",
+				"CurrentHeaterCoolerStateCooling",
+			},
+			v,
+			id,
+		)
 	})
 }

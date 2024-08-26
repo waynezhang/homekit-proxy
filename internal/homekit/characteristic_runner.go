@@ -32,7 +32,7 @@ func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 			return
 		}
 
-		param := ch.ToString(new, r.config.Type)
+		param := ch.ConvertValueToCommandLine(new, r.config.Type)
 		r.runSetter(param)
 	})
 
@@ -59,7 +59,7 @@ func (r *characteristicRunner) runGetter() {
 	cmd := r.config.Get
 	output, _ := utils.Exec(cmd)
 
-	val := ch.ParseValue(output, r.config.Type)
+	val := ch.ParseValueFromCommandLine(output, r.config.Type)
 	if val != nil {
 		if r.lastValue != val {
 			slog.Info("[Characteristcs] Setting remote value", "name", r.name, "val", val)
