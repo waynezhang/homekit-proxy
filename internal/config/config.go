@@ -1,14 +1,17 @@
 package config
 
 import (
+	"path/filepath"
+
 	"github.com/spf13/viper"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
 
 type Config struct {
 	Bridge      BridgeConfig
-	Accessories []AccessoriesConfig
-	Automations []AutomationConfig
+	Accessories []*AccessoriesConfig
+	Automations []*AutomationConfig
+	kv          *kv
 }
 
 type BridgeConfig struct {
@@ -49,9 +52,11 @@ type AutomationConfig struct {
 	Cron      string
 	Cmd       string
 	Tolerance int
+	Enabled   bool
+	Id        int
 }
 
-func Parse(file string) Config {
+func Parse(file string, directory string) Config {
 	config := Config{}
 
 	v := viper.New()
@@ -62,6 +67,11 @@ func Parse(file string) Config {
 
 	err = v.Unmarshal(&config)
 	utils.CheckFatalError(err, "Failed to parse config file %s", file)
+
+	config.kv = newKV(filepath.Join(directory, "automation-config.json"))
+	for _, a := range config.Automations {
+		a.Enabled = config.kv.getBool(a.Id, true)
+	}
 
 	return config
 }

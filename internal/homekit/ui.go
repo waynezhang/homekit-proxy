@@ -192,6 +192,17 @@ func automationsList(astats []*stat.AutomationStat) g.Node {
 					g.Text(ast.NextRun.String()),
 				),
 			),
+			Dl(
+				Class("dib mr4 mt2"),
+				Dt(
+					Class("b mb1 gray"),
+					g.Text("Enabled:"),
+				),
+				Dd(
+					Class("pa0 ma0"),
+					g.Text(strconv.FormatBool(ast.Enabled)),
+				),
+			),
 		)
 		items = append(items, el)
 	}

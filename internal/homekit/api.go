@@ -97,6 +97,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 			LastRun:   a.lastRun,
 			LastError: errToString(a.lastError),
 			NextRun:   a.nextRun,
+			Enabled:   a.config.Enabled,
 		}
 		asts = append(asts, &ast)
 	}

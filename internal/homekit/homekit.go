@@ -62,7 +62,7 @@ func Serve(cfgFile string, dbPath string) {
 }
 
 func new(cfgFile string, dbPath string) *HMManager {
-	cfg := config.Parse(cfgFile)
+	cfg := config.Parse(cfgFile, dbPath)
 	root := parseConfig(&cfg)
 	automations := automationRunnersFromConfig(cfg.Automations)
 
