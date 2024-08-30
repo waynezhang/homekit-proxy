@@ -8,6 +8,7 @@ import (
 	. "github.com/maragudk/gomponents/html"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/characteristics"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/stat"
+	"github.com/waynezhang/homekit-proxy/internal/html"
 )
 
 func (m *HMManager) startUIHandler() {
@@ -200,7 +201,13 @@ func automationsList(astats []*stat.AutomationStat) g.Node {
 				),
 				Dd(
 					Class("pa0 ma0"),
-					g.Text(strconv.FormatBool(ast.Enabled)),
+					html.RadioGroup(
+						ast.Name,
+						[]string{"true", "false"},
+						strconv.FormatBool(ast.Enabled),
+						strconv.Itoa(ast.Id),
+						characteristics.ExtraTypeAutomation,
+					),
 				),
 			),
 		)
@@ -214,26 +221,28 @@ func automationsList(astats []*stat.AutomationStat) g.Node {
 
 const (
 	eventScript string = `
-	document.querySelectorAll("input[type='radio']").forEach((input) => {
+	document.querySelectorAll("input[type='radio'][data-type='C']").forEach((input) => {
         input.addEventListener('change', async (e) => {
         	const el = e.target
-         	const id = el.dataset.id
-         	const val = el.dataset.value
-          	await update_c(id, val)
+          	await update("/s/c/" + el.dataset.id, el.dataset.value)
         })
     })
     document.querySelectorAll("input[type='range']").forEach((input) => {
+        input.addEventListener('change', async (e) => {
+			const el = e.target
+          	await update("/s/c/" + el.dataset.id, el.value)
+        })
+    })
+    document.querySelectorAll("input[type='radio'][data-type='A']").forEach((input) => {
            input.addEventListener('change', async (e) => {
            	const el = e.target
-            	const id = el.dataset.id
-            	const val = el.value
-	            await update_c(id, val)
+             	await update("/s/a/" + el.dataset.id, el.dataset.value)
            })
        })
 	`
 	utilsScript string = `
-	async function update_c(id, value) {
-		return await _fetch("/s/c/" + id, "POST", {"value": value})
+	async function update(url, value) {
+		return await _fetch(url, "POST", {"value": value})
 	}
 	async function _fetch(url, method, data) {
 		const resp = await fetch(url, {

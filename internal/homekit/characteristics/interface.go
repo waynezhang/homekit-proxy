@@ -19,6 +19,11 @@ var converterMap = map[string]convertFunc{}
 var cConstructorMap = map[string]cConstructorFunc{}
 var htmlElFuncMap = map[string]htmlElFunc{}
 
+const (
+	ExtraTypeCharacteristic string = "C"
+	ExtraTypeAutomation     string = "A"
+)
+
 func NewCharacteristic(cc config.CharacteristicsConfig) *characteristic.C {
 	fn := cConstructorMap[cc.Type]
 	if fn == nil {

@@ -75,3 +75,13 @@ func Parse(file string, directory string) Config {
 
 	return config
 }
+
+func (cfg *Config) SetAutomationEnabled(id int, enabled bool) {
+	for _, a := range cfg.Automations {
+		if a.Id == id {
+			a.Enabled = enabled
+			cfg.kv.setBool(id, enabled)
+			break
+		}
+	}
+}

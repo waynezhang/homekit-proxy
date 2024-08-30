@@ -63,6 +63,44 @@ func handleUpdate(m *HMManager) {
 		}
 		res.Write([]byte("{\"result\": \"OK\"}"))
 	})
+
+	m.server.ServeMux().HandleFunc("/s/a/{id}", func(res http.ResponseWriter, req *http.Request) {
+		if req.Method != "POST" {
+			res.WriteHeader(http.StatusBadRequest)
+			res.Write([]byte("Invalid method"))
+			return
+		}
+
+		path := strings.TrimPrefix(req.URL.Path, "/s/a/")
+		id, err := strconv.Atoi(strings.SplitN(path, "/", 2)[0])
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			res.Write([]byte("Invalid id"))
+			return
+		}
+
+		var body struct {
+			Enabled string `json:"value"`
+		}
+		err = json.NewDecoder(req.Body).Decode(&body)
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			res.Write([]byte("Invalid request body"))
+			return
+		}
+
+		enabled, err := strconv.ParseBool(body.Enabled)
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			res.Write([]byte("Invalid 'enabled' value"))
+			return
+		}
+
+		slog.Info("[API] Update automation", "id", id, "enabled", body.Enabled)
+
+		m.config.SetAutomationEnabled(id, enabled)
+		res.Write([]byte("{\"result\": \"OK\"}"))
+	})
 }
 
 func (m *HMManager) getAllStat() stat.Stat {
@@ -96,8 +134,11 @@ func (m *HMManager) getAllStat() stat.Stat {
 			Tolerance: a.config.Tolerance,
 			LastRun:   a.lastRun,
 			LastError: errToString(a.lastError),
-			NextRun:   a.nextRun,
+			NextRun:   time.Time{},
 			Enabled:   a.config.Enabled,
+		}
+		if a.config.Enabled {
+			ast.NextRun = a.nextRun
 		}
 		asts = append(asts, &ast)
 	}

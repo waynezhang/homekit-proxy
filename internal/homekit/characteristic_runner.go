@@ -1,6 +1,7 @@
 package homekit
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"time"
@@ -39,7 +40,7 @@ func newCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 	return r
 }
 
-func (r *characteristicRunner) start() {
+func (r *characteristicRunner) start(ctx context.Context) {
 	if len(r.config.Get) == 0 {
 		slog.Info("[Characteristcs] No Getter, skip")
 		return
@@ -47,7 +48,12 @@ func (r *characteristicRunner) start() {
 
 	go func() {
 		for {
-			r.runGetter()
+			select {
+			case <-ctx.Done():
+				slog.Info("[Characteristcs] Context is done, cancelling", "name", r.name)
+			default:
+				r.runGetter()
+			}
 			time.Sleep(time.Duration(r.config.Poll) * time.Second)
 		}
 	}()

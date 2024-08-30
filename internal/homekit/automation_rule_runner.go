@@ -1,6 +1,7 @@
 package homekit
 
 import (
+	"context"
 	"log/slog"
 	"math/rand"
 	"time"
@@ -18,7 +19,7 @@ type automationRunner struct {
 	nextRun   time.Time
 }
 
-func (r *automationRunner) start(t time.Time) {
+func (r *automationRunner) start(t time.Time, ctx context.Context) {
 	now := time.Now()
 
 	next, ref, err := nextRunTime(r.config.Cron, r.config.Tolerance, t)
@@ -33,14 +34,22 @@ func (r *automationRunner) start(t time.Time) {
 	go func() {
 		duration := next.Sub(now)
 		time.AfterFunc(duration, func() {
-			_, err := utils.Exec(r.config.Cmd)
+			select {
+			case <-ctx.Done():
+				slog.Info("[Automation] Context is done, cancelling", "name", r.config.Name, "cmd", r.config.Cmd)
+			default:
+				if r.config.Enabled {
+					slog.Info("[Automation] Running automtion task", "name", r.config.Name, "cmd", r.config.Cmd)
 
-			slog.Info("[Automation] Running automtion task", "name", r.config.Name, "cmd", r.config.Cmd)
+					_, err := utils.Exec(r.config.Cmd)
+					r.lastRun = time.Now()
+					r.lastError = err
+				} else {
+					slog.Info("[Automation] Skipping automtion task", "name", r.config.Name, "cmd", r.config.Cmd)
+				}
 
-			r.lastRun = time.Now()
-			r.lastError = err
-
-			r.start(ref)
+				r.start(ref, ctx)
+			}
 		})
 	}()
 }

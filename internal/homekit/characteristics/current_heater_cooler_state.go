@@ -5,6 +5,7 @@ import (
 	g "github.com/maragudk/gomponents"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/stat"
+	"github.com/waynezhang/homekit-proxy/internal/html"
 )
 
 func init() {
@@ -30,7 +31,7 @@ func init() {
 		}[v]
 	})
 	registerHTMLElBuilderFunc(cType, func(name string, v string, id string, cst *stat.CharacteristicsStat) g.Node {
-		return radioGroup(
+		return html.RadioGroup(
 			name,
 			[]string{
 				"CurrentHeaterCoolerStateInactive",
@@ -40,6 +41,7 @@ func init() {
 			},
 			v,
 			id,
+			ExtraTypeCharacteristic,
 		)
 	})
 }

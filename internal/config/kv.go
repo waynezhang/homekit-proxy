@@ -13,7 +13,10 @@ type kv struct {
 }
 
 func newKV(file string) *kv {
-	instance := &kv{file: file}
+	instance := &kv{
+		file: file,
+		val:  map[int]bool{},
+	}
 
 	data, err := os.ReadFile(file)
 	if err != nil {

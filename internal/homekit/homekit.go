@@ -13,6 +13,7 @@ import (
 )
 
 type HMManager struct {
+	config      *config.Config
 	server      *hap.Server
 	root        *rootBridge
 	automations []*automationRunner
@@ -96,6 +97,7 @@ func new(cfgFile string, dbPath string) *HMManager {
 	slog.Info("[Server] PIN code", "pin", cfg.Bridge.PinCode)
 
 	return &HMManager{
+		config:      &cfg,
 		server:      server,
 		root:        root,
 		automations: automations,
@@ -107,10 +109,10 @@ func (m *HMManager) start() {
 	m.cancel = cancel
 
 	for _, r := range m.root.runners {
-		r.start()
+		r.start(ctx)
 	}
 	for _, r := range m.automations {
-		r.start(time.Now())
+		r.start(time.Now(), ctx)
 	}
 
 	m.startHealthCheckHandler()
