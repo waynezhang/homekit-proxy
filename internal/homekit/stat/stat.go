@@ -1,8 +1,6 @@
 package stat
 
-import (
-	"time"
-)
+import "time"
 
 type AutomationStat struct {
 	Id        int       `json:"id"`

@@ -9,6 +9,7 @@ import (
 	"github.com/brutella/hap"
 	"github.com/radovskyb/watcher"
 	"github.com/waynezhang/homekit-proxy/internal/config"
+	"github.com/waynezhang/homekit-proxy/internal/homekit/runner"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
 
@@ -16,7 +17,7 @@ type HMManager struct {
 	config      *config.Config
 	server      *hap.Server
 	root        *rootBridge
-	automations []*automationRunner
+	automations []*runner.AutomationRunner
 	cancel      context.CancelFunc
 }
 
@@ -70,11 +71,11 @@ func new(cfgFile string, dbPath string) *HMManager {
 	var w = slog.Info
 	w("[Config] Bridge: ", "name", root.b.Name())
 	for _, c := range root.runners {
-		w("[Config]   Characteristic", "name", c.name, "get", c.config.Get, "set", c.config.Set, "Poll", c.config.Poll)
+		w("[Config]   Characteristic", "name", c.Name, "get", c.Config.Get, "set", c.Config.Set, "Poll", c.Config.Poll)
 	}
 	w("[Config] Automations:")
 	for _, a := range automations {
-		w("[Config]   Rule", "name", a.config.Name, "cmd", a.config.Cmd, "cron", a.config.Cron, "tolerance", a.config.Tolerance)
+		w("[Config]   Rule", "name", a.Config.Name, "cmd", a.Config.Cmd, "cron", a.Config.Cron, "tolerance", a.Config.Tolerance)
 	}
 
 	store := hap.NewFsStore(dbPath)
@@ -109,10 +110,10 @@ func (m *HMManager) start() {
 	m.cancel = cancel
 
 	for _, r := range m.root.runners {
-		r.start(ctx)
+		r.Start(ctx)
 	}
 	for _, r := range m.automations {
-		r.start(time.Now(), ctx)
+		r.Start(time.Now(), ctx)
 	}
 
 	m.startHealthCheckHandler()
