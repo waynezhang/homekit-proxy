@@ -42,7 +42,7 @@ require (
 require (
 	github.com/brutella/hap v0.0.34
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/maragudk/gomponents v0.20.5
+	github.com/maragudk/gomponents v0.22.0
 	github.com/phsym/console-slog v0.3.1
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0
