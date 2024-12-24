@@ -1,0 +1,45 @@
+<template x-component:hkp="message">
+    <div class="p-4 my-4 text-base" :class="$api.class_map[$prop('type')]">
+        <slot></slot>
+    </div>
+    <script>
+        return {
+            observer: null,
+            class_map: {
+                info: "text-blue-700 bg-blue-50",
+                error: "text-red-700 bg-red-50",
+            },
+            async onMounted() {
+                this.observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        let oldValue = mutation.oldValue;
+                        let newValue = mutation.target.textContent;
+                        if (oldValue !== newValue) {
+                            this.updateVisibility();
+                        }
+                    });
+                });
+
+                this.observer.observe(this.$el, {
+                    characterDataOldValue: true,
+                    subtree: true,
+                    childList: true,
+                    characterData: true,
+                });
+
+                this.updateVisibility();
+            },
+            async onUnmounted() {
+                this.observer.disconnect();
+            },
+            async updateVisibility() {
+                const hasContent = this.$el.textContent.trim().length > 0;
+                if (hasContent) {
+                    this.$el.classList.remove("hidden");
+                } else {
+                    this.$el.classList.add("hidden");
+                }
+            },
+        };
+    </script>
+</template>

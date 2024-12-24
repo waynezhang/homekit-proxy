@@ -1,0 +1,14 @@
+<template x-component:hkp="range" x-modelable="value" x-data="{ value: '' }">
+    <div class="flex items-center">
+        <label class="mr-2" x-text="Math.round(value)"></label>
+        <input
+            x-model="value"
+            type="range"
+            :min="$prop('min')"
+            :max="$prop('max')"
+            step="1"
+            class="appearance-none cursor-pointer bg-gray-200 rounded-lg"
+        />
+    </div>
+    <slot></slot>
+</template>
