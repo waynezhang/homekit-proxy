@@ -203,8 +203,8 @@
                                         'true',
                                         'false'
                                         ]"
-                                    x-model="c.value"
-                                    @change="$api.$of().updateA(c.id, c.value)"
+                                    x-model="c.enabled"
+                                    @change="$api.$of().updateA(c.id, c.enabled)"
                                 ></hkp-dropdown>
                             </div>
                         </div>
@@ -228,7 +228,7 @@
                     async updateC(id, value) {
                         try {
                             await $json("/s/c/" + id, "POST", { value: value });
-                            this.infoMessage = "Succeed to set " + id + ' to ' + value;
+                            this.infoMessage = "Succeed to set characteristic #" + id + ' to [' + value + ']';
                         } catch (e) {
                             this.errorMessage = e;
                         }
@@ -236,7 +236,7 @@
                     async updateA(id, value) {
                         try {
                             await $json("/s/a/" + id, "POST", { value: value });
-                            this.infoMessage = "Succeed to set " + id + ' to ' + value;
+                            this.infoMessage = "Succeed to set automation #" + id + ' to [' + value + ']';
                         } catch (e) {
                             this.errorMessage = e;
                         }
@@ -276,8 +276,6 @@
                 <div class="relative">
                     <select
                         x-model="value"
-                        :data-type="$prop('select-data-type')"
-                        :name="$prop('select-name')"
                         class="pl-3 pr-8 py-1 bg-transparent text-slate-700 text-sm border border-slate-400 appearance-none rounded-none"
                     >
                         <template x-for="opt in $prop('options')">
