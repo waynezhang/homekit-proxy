@@ -2,10 +2,7 @@ package characteristics
 
 import (
 	"github.com/brutella/hap/characteristic"
-	g "github.com/maragudk/gomponents"
 	"github.com/waynezhang/homekit-proxy/internal/config"
-	"github.com/waynezhang/homekit-proxy/internal/homekit/stat"
-	"github.com/waynezhang/homekit-proxy/internal/html"
 )
 
 func init() {
@@ -29,19 +26,5 @@ func init() {
 			characteristic.CurrentHeaterCoolerStateHeating:  "CurrentHeaterCoolerStateHeating",
 			characteristic.CurrentHeaterCoolerStateCooling:  "CurrentHeaterCoolerStateCooling",
 		}[v]
-	})
-	registerHTMLElBuilderFunc(cType, func(name string, v string, id string, cst *stat.CharacteristicsStat) g.Node {
-		return html.RadioGroup(
-			name,
-			[]string{
-				"CurrentHeaterCoolerStateInactive",
-				"CurrentHeaterCoolerStateIdle",
-				"CurrentHeaterCoolerStateHeating",
-				"CurrentHeaterCoolerStateCooling",
-			},
-			v,
-			id,
-			ExtraTypeCharacteristic,
-		)
 	})
 }

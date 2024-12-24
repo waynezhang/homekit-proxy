@@ -4,10 +4,7 @@ import (
 	"strconv"
 
 	"github.com/brutella/hap/characteristic"
-	g "github.com/maragudk/gomponents"
 	"github.com/waynezhang/homekit-proxy/internal/config"
-	"github.com/waynezhang/homekit-proxy/internal/homekit/stat"
-	"github.com/waynezhang/homekit-proxy/internal/html"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
 
@@ -32,8 +29,5 @@ func init() {
 	})
 	registerConverterToCommandLine(cType, func(v any) string {
 		return strconv.FormatFloat(v.(float64), 'f', 2, 64)
-	})
-	registerHTMLElBuilderFunc(cType, func(name string, v string, id string, cst *stat.CharacteristicsStat) g.Node {
-		return html.Slider(cst.Min, cst.Max, cst.Step, v, id)
 	})
 }

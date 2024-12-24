@@ -1,0 +1,368 @@
+<!doctype html>
+<html>
+    <head>
+        <title>HomeKit Proxy</title>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover"
+        />
+        <script
+            defer="defer"
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"
+        ></script>
+        <script src="https://cdn.jsdelivr.net/npm/@vimesh/style@1/dist/vs.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@vimesh/ui@0/dist/vui.min.js"></script>
+        <script>
+            $vui.config = {
+                namespace: "hkp",
+            };
+            $vs.addMacroCss({
+                a: "text-blue-600",
+                h1: "text-xl font-medium",
+                h2: "text-xl font-medium",
+                h3: "font-normal",
+                body: "font-system font-light",
+            });
+            $vs.config.fonts = {
+                system: "system-ui",
+            };
+        </script>
+    </head>
+    <body class="px-6 py-4">
+        <hkp-body></hkp-body>
+
+        <!-- Body -->
+        <template x-component="body">
+            <div>
+                <h1 x-text="$api.data.name"></h1>
+                <div class="text-xs" x-text="$api.data.now"></div>
+                <hkp-message type="info"><span x-text="$api.$of().infoMessage"></span></hkp-message>
+                <hkp-message type="error"><span x-text="$api.$of().errorMessage"></span></hkp-message>
+                <div class="mt-8">
+                    <h2>Characteristics</h2>
+                    <template x-for="c in $api.data.characteristics">
+                        <div
+                            class="flex flex-wrap gap-8 my-2 px-2 py-2 bg-gray-50"
+                        >
+                            <div>
+                                <div :class="$api.labelClass">ID</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.id"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Name</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.name"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Type</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.type"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Value</div>
+                                <template x-if="c.type == 'Active'">
+                                    <hkp-dropdown
+                                        :options="[
+                                            'ActiveActive',
+                                            'ActiveInactive'
+                                            ]"
+                                        x-model="c.value"
+                                        @change="$api.$of().updateC(c.id, c.value)"
+                                    ></hkp-dropdown>
+                                </template>
+                                <template x-if="c.type == 'On'">
+                                    <hkp-dropdown
+                                        :options="[
+                                            'true',
+                                            'false'
+                                            ]"
+                                        x-model="c.value"
+                                        @change="$api.$of().updateC(c.id, c.value)"
+                                    ></hkp-dropdown>
+                                </template>
+                                <template
+                                    x-if="c.type == 'CurrentHeaterCoolerState'"
+                                >
+                                    <hkp-dropdown
+                                        :options="[
+                                            'CurrentHeaterCoolerStateInactive',
+                                            'CurrentHeaterCoolerStateIdle',
+                                            'CurrentHeaterCoolerStateHeating',
+                                            'CurrentHeaterCoolerStateCooling',
+                                            ]"
+                                        x-model="c.value"
+                                        @change="$api.$of().updateC(c.id, c.value)"
+                                    ></hkp-dropdown>
+                                </template>
+                                <template
+                                    x-if="c.type == 'TargetHeaterCoolerState'"
+                                >
+                                    <hkp-dropdown
+                                        :options="[
+                                            'TargetHeaterCoolerStateAuto',
+                                            'TargetHeaterCoolerStateHeat',
+                                            'TargetHeaterCoolerStateCool',
+                                            ]"
+                                        x-model="c.value"
+                                        @change="$api.$of().updateC(c.id, c.value)"
+                                    ></hkp-dropdown>
+                                </template>
+                                <template
+                                    x-if="c.type == 'CurrentTemperature'"
+                                >
+                                    <span x-text="c.value"></span>
+                                </template>
+                                <template
+                                    x-if="c.type == 'RotationSpeed' || c.type == 'CoolingThresholdTemperature' || c.type == 'HeatingThresholdTemperature'"
+                                >
+                                    <hkp-range
+                                        :min="c.min"
+                                        :max="c.max"
+                                        x-model="c.value"
+                                        @change="$api.$of().updateC(c.id, c.value)"
+                                    ></hkp-range>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <div class="mt-8">
+                    <h2>Automations</h2>
+                    <template x-for="c in $api.data.automations">
+                        <div
+                            class="flex flex-wrap gap-8 my-2 px-2 py-2 bg-gray-50"
+                        >
+                            <div>
+                                <div :class="$api.labelClass">ID</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.id"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Name</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.name"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Command</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.cmd"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Cron</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.cron"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Tolerance</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.tolerance"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Last Run</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.last_run"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Last Error</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.last_error"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Next Run</div>
+                                <div
+                                    :class="$api.valueClass"
+                                    x-text="c.next_run"
+                                ></div>
+                            </div>
+                            <div>
+                                <div :class="$api.labelClass">Enabled</div>
+                                <hkp-dropdown
+                                    :options="[
+                                        'true',
+                                        'false'
+                                        ]"
+                                    x-model="c.value"
+                                    @change="$api.$of().updateA(c.id, c.value)"
+                                ></hkp-dropdown>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <script>
+                return {
+                    labelClass: "text-xs font-semibold text-gray-600 mb-2",
+                    valueClass: "",
+                    errorMessage: "",
+                    data: {
+                        now: "",
+                        name: "",
+                        characteristics: [],
+                        automations: [],
+                    },
+                    async onMounted() {
+                        this.data = await $json("s/all");
+                    },
+                    async updateC(id, value) {
+                        try {
+                            await $json("/s/c/" + id, "POST", { value: value });
+                            this.infoMessage = "Succeed to set " + id + ' to ' + value;
+                        } catch (e) {
+                            this.errorMessage = e;
+                        }
+                    },
+                    async updateA(id, value) {
+                        try {
+                            await $json("/s/a/" + id, "POST", { value: value });
+                            this.infoMessage = "Succeed to set " + id + ' to ' + value;
+                        } catch (e) {
+                            this.errorMessage = e;
+                        }
+                    },
+                };
+            </script>
+        </template>
+
+        <!-- Dropdown -->
+        <template
+            x-component="range"
+            x-modelable="value"
+            x-data="{ value: '' }"
+        >
+            <div class="flex items-center">
+                <label class="mr-2" x-text="Math.round(value)">
+                </label>
+                <input
+                    x-model="value"
+                    type="range"
+                    :min="$prop('min')"
+                    :max="$prop('max')"""
+                    step="1"
+                    class="appearance-none cursor-pointer bg-gray-200 rounded-lg"
+                ></input>
+            </div>
+            <slot></slot>
+        </template>
+
+        <!-- Slider -->
+        <template
+            x-component="dropdown"
+            x-modelable="value"
+            x-data="{ value: '' }"
+        >
+            <div class="flex">
+                <div class="relative">
+                    <select
+                        x-model="value"
+                        :data-type="$prop('select-data-type')"
+                        :name="$prop('select-name')"
+                        class="pl-3 pr-8 py-1 bg-transparent text-slate-700 text-sm border border-slate-400 appearance-none rounded-none"
+                    >
+                        <template x-for="opt in $prop('options')">
+                            <option :value="opt" x-text="opt"></option>
+                        </template>
+                    </select>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.2"
+                        stroke="currentColor"
+                        class="h-5 w-5 ml-1 absolute top-1.5 right-1.5 text-slate-700"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
+                        />
+                    </svg>
+                </div>
+            </div>
+            <slot></slot>
+        </template>
+
+        <!-- Message -->
+        <template x-component="message">
+            <div class="p-4 my-4 text-base" :class="$api.class_map[$prop('type')]">
+                <slot></slot>
+            </div>
+            <script>
+                return {
+                    observer: null,
+                    class_map: {
+                        info: "text-blue-700 bg-blue-50",
+                        error: "text-red-700 bg-red-50",
+                    },
+                    async onMounted() {
+                        this.observer = new MutationObserver((mutations) => {
+                            mutations.forEach((mutation) => {
+                                let oldValue = mutation.oldValue;
+                                let newValue = mutation.target.textContent;
+                                if (oldValue !== newValue) {
+                                    this.updateVisibility();
+                                }
+                            });
+                        });
+
+                        this.observer.observe(this.$el, {
+                            characterDataOldValue: true,
+                            subtree: true,
+                            childList: true,
+                            characterData: true,
+                        });
+
+                        this.updateVisibility();
+                    },
+                    async onUnmounted() {
+                        this.observer.disconnect();
+                    },
+                    async updateVisibility() {
+                        const hasContent = this.$el.textContent.trim().length > 0;
+                        if (hasContent) {
+                            this.$el.classList.remove("hidden");
+                        } else {
+                            this.$el.classList.add("hidden");
+                        }
+                    },
+                };
+            </script>
+        </template>
+
+        <script type="text/javascript">
+            async function $json(url, method, data) {
+                const resp = await fetch(url, {
+                    method: method || "GET",
+                    headers: { "Content-Type": "application/json" },
+                    body: data ? JSON.stringify(data) : null,
+                });
+                if (!resp.ok) {
+                    const json = await resp.json();
+                    throw Error(json.message);
+                }
+                return await resp.json();
+            }
+        </script>
+    </body>
+</html>
