@@ -49,6 +49,22 @@
                 }
                 return await resp.json();
             }
+            function $formatDate(date) {
+                if (date == null || date == "0001-01-01T00:00:00Z") {
+                    return "";
+                }
+                date = new Date(date);
+                function pad(s) {
+                    return s.padStart(2, "0");
+                }
+                const year = date.getFullYear();
+                const month = pad(String(date.getMonth() + 1));
+                const day = pad(String(date.getDate()));
+                const hour = pad(String(date.getHours()));
+                const min = pad(String(date.getMinutes()));
+                const sec = pad(String(date.getSeconds()));
+                return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
+            }
         </script>
     </body>
 </html>

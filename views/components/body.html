@@ -130,11 +130,17 @@
                     </div>
                     <div class="md:col-span-2">
                         <div :class="$api.labelClass">Next Run</div>
-                        <div :class="$api.valueClass" x-text="c.next_run"></div>
+                        <div
+                            :class="$api.valueClass"
+                            x-text="$formatDate(c.next_run)"
+                        ></div>
                     </div>
                     <div class="md:col-span-2">
                         <div :class="$api.labelClass">Last Run</div>
-                        <div :class="$api.valueClass" x-text="c.last_run"></div>
+                        <div
+                            :class="$api.valueClass"
+                            x-text="$formatDate(c.last_run)"
+                        ></div>
                     </div>
                     <div class="md:col-span-2">
                         <div :class="$api.labelClass">Last Error</div>
