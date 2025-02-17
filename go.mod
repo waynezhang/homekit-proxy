@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/bradhe/cadence v0.0.0-20240802170721-5e6bb033e72c
 	github.com/radovskyb/watcher v1.0.7
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 )
 
@@ -47,7 +47,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/maragudk/gomponents v0.22.0
 	github.com/phsym/console-slog v0.3.1
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/spf13/viper v1.19.0
 	golang.org/x/sys v0.28.0 // indirect
 )
