@@ -1,10 +1,10 @@
 module github.com/waynezhang/homekit-proxy
 
-go 1.22.5
-toolchain go1.24.1
+go 1.24.1
 
 require (
 	github.com/bradhe/cadence v0.0.0-20240802170721-5e6bb033e72c
+	github.com/nasa9084/go-switchbot v1.0.0
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
@@ -15,6 +15,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-chi/chi v1.5.4 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/miekg/dns v1.1.61 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
