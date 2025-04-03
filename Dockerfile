@@ -1,9 +1,14 @@
-FROM golang:latest
+# Build
+FROM golang:latest as build
 
-WORKDIR /app
+WORKDIR /go/src/app
 
 COPY . .
+RUN CGO_ENABLED=0 make build
 
-RUN make build
+# Run
+FROM alpine:latest
 
-ENTRYPOINT ["/app/bin/hkp", "serve", "-v", "-d", "/db", "-c", "/config/homekit.toml"]
+COPY --from=build /go/src/app/bin/hkp /hkp
+
+ENTRYPOINT ["/hkp", "serve", "-v", "-d", "/db", "-c", "/config/homekit.toml"]
