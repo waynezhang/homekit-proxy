@@ -8,7 +8,9 @@ RUN CGO_ENABLED=0 make build
 
 # Run
 FROM alpine:latest
+WORKDIR /app
 
-COPY --from=build /go/src/app/bin/hkp /hkp
+COPY --from=build /go/src/app/bin/hkp /app/hkp
+COPY views ./views
 
-ENTRYPOINT ["/hkp", "serve", "-v", "-d", "/db", "-c", "/config/homekit.toml"]
+ENTRYPOINT ["/app/hkp", "serve", "-v", "-d", "/db", "-c", "/config/homekit.toml"]
