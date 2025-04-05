@@ -10,6 +10,7 @@ RUN CGO_ENABLED=0 make build
 FROM alpine:latest
 WORKDIR /app
 
+RUN apk add tzdata
 COPY --from=build /go/src/app/bin/hkp /app/hkp
 COPY views ./views
 
