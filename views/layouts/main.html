@@ -1,71 +1,69 @@
 <!doctype html>
 <html>
-    <head>
-        <title>HomeKit Proxy</title>
-        <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover"
-        />
-        <script
-            defer="defer"
-            src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"
-        ></script>
-        <script src="https://cdn.jsdelivr.net/npm/@vimesh/style@1/dist/vs.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@vimesh/ui@0/dist/vui.min.js"></script>
-        <script>
-            $vui.config = {
-                namespace: "hkp",
-            };
-            $vs.addMacroCss({
-                a: "text-blue-600",
-                h1: "text-xl font-medium",
-                h2: "text-xl font-medium",
-                h3: "font-normal",
-                body: "font-system font-light",
-            });
-            $vs.config.fonts = {
-                system: "system-ui",
-                mono: "ui-monospace",
-            };
-            $vui.config.importMap = {
-                hkp: "/views/components/${component}.html",
-            };
-            $vui.config.autoImport = true;
-        </script>
-    </head>
 
-    <body class="px-6 py-4">
-        <hkp-body></hkp-body>
-        <script type="text/javascript">
-            async function $json(url, method, data) {
-                const resp = await fetch(url, {
-                    method: method || "GET",
-                    headers: { "Content-Type": "application/json" },
-                    body: data ? JSON.stringify(data) : null,
-                });
-                if (!resp.ok) {
-                    const json = await resp.json();
-                    throw Error(json.message);
-                }
-                return await resp.json();
-            }
-            function $formatDate(date) {
-                if (date == null || date == "0001-01-01T00:00:00Z") {
-                    return "";
-                }
-                date = new Date(date);
-                function pad(s) {
-                    return s.padStart(2, "0");
-                }
-                const year = date.getFullYear();
-                const month = pad(String(date.getMonth() + 1));
-                const day = pad(String(date.getDate()));
-                const hour = pad(String(date.getHours()));
-                const min = pad(String(date.getMinutes()));
-                const sec = pad(String(date.getSeconds()));
-                return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
-            }
-        </script>
-    </body>
+<head>
+  <title>HomeKit Proxy</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffffe6" />
+  <link rel="manifest" href="/manifest.json" />
+  <script defer="defer" src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vimesh/style@1/dist/vs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vimesh/ui@0/dist/vui.min.js"></script>
+  <script>
+    $vui.config = {
+      namespace: "hkp",
+    };
+    $vs.addMacroCss({
+      a: "text-blue-600",
+      h1: "text-xl font-medium",
+      h2: "text-xl font-medium",
+      h3: "font-normal",
+      body: "font-system font-light",
+    });
+    $vs.config.fonts = {
+      system: "system-ui",
+      mono: "ui-monospace",
+    };
+    $vui.config.importMap = {
+      hkp: "/views/components/${component}.html",
+    };
+    $vui.config.autoImport = true;
+  </script>
+</head>
+
+<body class="px-6 py-4">
+  <hkp-body></hkp-body>
+  <script type="text/javascript">
+    async function $json(url, method, data) {
+      const resp = await fetch(url, {
+        method: method || "GET",
+        headers: {"Content-Type": "application/json"},
+        body: data ? JSON.stringify(data) : null,
+      });
+      if (!resp.ok) {
+        const json = await resp.json();
+        throw Error(json.message);
+      }
+      return await resp.json();
+    }
+    function $formatDate(date) {
+      if (date == null || date == "0001-01-01T00:00:00Z") {
+        return "";
+      }
+      date = new Date(date);
+      function pad(s) {
+        return s.padStart(2, "0");
+      }
+      const year = date.getFullYear();
+      const month = pad(String(date.getMonth() + 1));
+      const day = pad(String(date.getDate()));
+      const hour = pad(String(date.getHours()));
+      const min = pad(String(date.getMinutes()));
+      const sec = pad(String(date.getSeconds()));
+      return `${year}-${month}-${day} ${hour}:${min}:${sec}`;
+    }
+  </script>
+</body>
+
 </html>
