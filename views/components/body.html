@@ -12,16 +12,16 @@
             <h2>Characteristics</h2>
             <template x-for="c in $api.data.characteristics">
                 <div
-                    class="grid md:grid-cols-6 gap-x-8 gap-y-2 my-2 px-2 py-2 bg-gray-50"
+                    class="grid grid-cols-2 md:grid-cols-6 gap-x-8 gap-y-2 my-2 px-2 py-2 bg-gray-50"
                 >
                     <div class="md:col-span-2 xl:col-span-2">
-                        <div :class="$api.labelClass" x-text="'#' + c.id"></div>
+                        <div class="hidden md:block" :class="$api.labelClass" x-text="'#' + c.id"></div>
                         <div
                             :class="$api.descriptionClass"
                             x-text="c.name"
                         ></div>
                     </div>
-                    <div class="md:col-span-2 xl:col-span-1">
+                    <div class="md:col-span-2 xl:col-span-1 hidden md:block">
                         <div :class="$api.labelClass">Type</div>
                         <div
                             :class="$api.descriptionClass"
@@ -29,7 +29,7 @@
                         ></div>
                     </div>
                     <div class="md:col-span-6 xl:col-span-3">
-                        <div :class="$api.labelClass">Value</div>
+                        <div class="hidden md:block" :class="$api.labelClass">Value</div>
                         <template x-if="c.type == 'Active'">
                             <hkp-dropdown
                                 :options="[
@@ -94,42 +94,42 @@
             <h2>Automations</h2>
             <template x-for="c in $api.data.automations">
                 <div
-                    class="grid md:grid-cols-12 gap-x-8 gap-y-2 my-2 px-2 py-2 bg-gray-50"
+                    class="grid grid-cols-2 md:grid-cols-12 gap-x-8 gap-y-2 my-2 px-2 py-2 bg-gray-50"
                 >
-                    <div class="md:col-span-2">
-                        <div :class="$api.labelClass" x-text="'#' + c.id"></div>
+                    <div class="col-span-1 md:col-span-2">
+                        <div class="hidden md:block" :class="$api.labelClass" x-text="'#' + c.id"></div>
                         <div
                             :class="$api.descriptionClass"
                             x-text="c.name"
                         ></div>
                     </div>
-                    <div class="md:col-span-1">
-                        <div :class="$api.labelClass">Enabled</div>
+                    <div class="col-span-1">
+                        <div class="hidden md:block" :class="$api.labelClass">Enabled</div>
                         <hkp-dropdown
                             :options="[ 'true', 'false' ]"
                             x-model="c.enabled"
                             @change="$api.$of().updateA(c.id, c.enabled)"
                         ></hkp-dropdown>
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-3 hidden md:block">
                         <div :class="$api.labelClass">Command</div>
                         <div :class="$api.valueClass" x-text="c.cmd"></div>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-2 hidden md:block">
                         <div :class="$api.labelClass">Cron</div>
                         <div
                             :class="$api.valueClass"
                             x-text="c.cron + ' ± ' + c.tolerance"
                         ></div>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="col-span-1 md:col-span-2">
                         <div :class="$api.labelClass">Next Run</div>
                         <div
                             :class="$api.valueClass"
                             x-text="$formatDate(c.next_run)"
                         ></div>
                     </div>
-                    <div class="md:col-span-2">
+                    <div class="col-span-1 md:col-span-2">
                         <div :class="$api.labelClass">Last Run</div>
                         <div
                             :class="$api.valueClass"
