@@ -127,7 +127,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 	asts := []*stat.AutomationStat{}
 	for _, a := range m.automations {
 		ast := stat.AutomationStat{
-			Id:        a.Id,
+			Id:        a.Config.Id,
 			Name:      a.Config.Name,
 			Cmd:       a.Config.Cmd,
 			Cron:      a.Config.Cron,
