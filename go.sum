@@ -1,5 +1,5 @@
-github.com/bradhe/cadence v0.0.0-20250122162918-6cc82e3305d1 h1:1E5eWzwJxTjro7fsqpLEQsTAM6Pp2643FB0dnh+UM0Y=
-github.com/bradhe/cadence v0.0.0-20250122162918-6cc82e3305d1/go.mod h1:v1j06NhEorRHm/Xn3odEi+sOpPUzsi4BNSqrcMweoVA=
+github.com/bradhe/cadence v0.1.0 h1:cZQpzsZ2IJ3/3PmEGYLoGEWNT/OK5WyP/e7TvEVao0g=
+github.com/bradhe/cadence v0.1.0/go.mod h1:v1j06NhEorRHm/Xn3odEi+sOpPUzsi4BNSqrcMweoVA=
 github.com/brutella/dnssd v1.2.14 h1:qLpTnRTm5peo2jA30hqMIbCuWn8x3sFg3e9o9ODOobw=
 github.com/brutella/dnssd v1.2.14/go.mod h1:tG4GE8orv6+irE5rdsNgb6MJSxm6cyMUKdC5jmD22gk=
 github.com/brutella/hap v0.0.35 h1:9J6jWnrlnZGJIdskYdkRt8EGfEoIe2sMqc6qBNQTnAM=
@@ -19,8 +19,6 @@ github.com/go-viper/mapstructure/v2 v2.2.1 h1:ZAaOCxANMuZx5RCeg0mBdEZk7DZasvvZIx
 github.com/go-viper/mapstructure/v2 v2.2.1/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
-github.com/google/uuid v1.3.0 h1:t6JiXgmwXMjEs8VusXIJk2BXHsn+wx8BZdTaoZ5fu7I=
-github.com/google/uuid v1.3.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
@@ -32,8 +30,6 @@ github.com/maragudk/gomponents v0.22.0/go.mod h1:nHkNnZL6ODgMBeJhrZjkMHVvNdoYsfm
 github.com/miekg/dns v1.1.61/go.mod h1:mnAarhS3nWaW+NVP2wTkYVIZyHNJ098SJZUki3eykwQ=
 github.com/miekg/dns v1.1.65 h1:0+tIPHzUW0GCge7IiK3guGP57VAw7hoPDfApjkMD1Fc=
 github.com/miekg/dns v1.1.65/go.mod h1:Dzw9769uoKVaLuODMDZz9M6ynFU6Em65csPuoi8G0ck=
-github.com/nasa9084/go-switchbot v1.0.0 h1:rBoMJvd0kgReKX7ODJ3Ri2wujslQEdI4yqqUSzFPAag=
-github.com/nasa9084/go-switchbot v1.0.0/go.mod h1:9bPyOoTj1Ez9Zd9fQ9IRVgCFcMVyVXzgqo6h1iYvCl0=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
 github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/phsym/console-slog v0.3.1 h1:Fuzcrjr40xTc004S9Kni8XfNsk+qrptQmyR+wZw9/7A=
