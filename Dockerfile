@@ -14,4 +14,4 @@ RUN apk add tzdata
 COPY --from=build /go/src/app/bin/hkp /app/hkp
 COPY views ./views
 
-ENTRYPOINT ["/app/hkp", "serve", "-v", "-d", "/db", "-c", "/config/homekit.toml"]
+ENTRYPOINT ["/app/hkp", "serve", "-v", "-d", "/db", "-c", "/config"]

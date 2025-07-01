@@ -56,17 +56,42 @@ type AutomationConfig struct {
 	Id        int
 }
 
-func Parse(file string, directory string) Config {
+func Parse(configDir string, directory string) Config {
 	config := Config{}
 
-	v := viper.New()
-	v.SetConfigFile(file)
+	// Parse device.toml
+	deviceFile := filepath.Join(configDir, "device.toml")
+	vDevice := viper.New()
+	vDevice.SetConfigFile(deviceFile)
 
-	err := v.ReadInConfig()
-	utils.CheckFatalError(err, "Failed to parse config file %s", file)
+	err := vDevice.ReadInConfig()
+	utils.CheckFatalError(err, "Failed to parse device config file %s", deviceFile)
 
-	err = v.Unmarshal(&config)
-	utils.CheckFatalError(err, "Failed to parse config file %s", file)
+	var deviceConfig struct {
+		Bridge      BridgeConfig
+		Accessories []*AccessoriesConfig
+	}
+	err = vDevice.Unmarshal(&deviceConfig)
+	utils.CheckFatalError(err, "Failed to parse device config file %s", deviceFile)
+
+	config.Bridge = deviceConfig.Bridge
+	config.Accessories = deviceConfig.Accessories
+
+	// Parse automation.toml
+	automationFile := filepath.Join(configDir, "automation.toml")
+	vAutomation := viper.New()
+	vAutomation.SetConfigFile(automationFile)
+
+	err = vAutomation.ReadInConfig()
+	utils.CheckFatalError(err, "Failed to parse automation config file %s", automationFile)
+
+	var automationConfig struct {
+		Automations []*AutomationConfig
+	}
+	err = vAutomation.Unmarshal(&automationConfig)
+	utils.CheckFatalError(err, "Failed to parse automation config file %s", automationFile)
+
+	config.Automations = automationConfig.Automations
 
 	config.kv = newKV(filepath.Join(directory, "automation-config.json"))
 	for _, a := range config.Automations {

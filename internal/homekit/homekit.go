@@ -31,7 +31,7 @@ const (
 
 type serverEvent int
 
-func Serve(cfgFile string, dbPath string) {
+func Serve(cfgDir string, dbPath string) {
 	ch := make(chan serverEvent, 1)
 	ch <- serverEventServerInit
 	defer close(ch)
@@ -44,11 +44,11 @@ func Serve(cfgFile string, dbPath string) {
 			switch e {
 			case serverEventServerInit:
 				go func() {
-					startWatchingConfigFile(cfgFile, ch)
+					startWatchingConfigFiles(cfgDir, ch)
 				}()
 				ch <- serverEventServerPreparing
 			case serverEventServerPreparing:
-				m = new(cfgFile, dbPath)
+				m = new(cfgDir, dbPath)
 				go func() {
 					m.start()
 					ch <- serverEventServerStopped
@@ -63,8 +63,8 @@ func Serve(cfgFile string, dbPath string) {
 	}
 }
 
-func new(cfgFile string, dbPath string) *HMManager {
-	cfg := config.Parse(cfgFile, dbPath)
+func new(cfgDir string, dbPath string) *HMManager {
+	cfg := config.Parse(cfgDir, dbPath)
 	root := parseConfig(&cfg)
 	automations := automationRunnersFromConfig(cfg.Automations)
 
@@ -128,12 +128,14 @@ func (m *HMManager) stop() {
 	m.cancel()
 }
 
-func startWatchingConfigFile(cfgFile string, ch chan serverEvent) {
+func startWatchingConfigFiles(cfgDir string, ch chan serverEvent) {
 	w := watcher.New()
 	w.SetMaxEvents(1)
 	w.FilterOps(watcher.Write)
-	err := w.Add(cfgFile)
-	utils.CheckFatalError(err, "[FS] Failed to watch file")
+	err := w.Add(cfgDir + "/device.toml")
+	utils.CheckFatalError(err, "[FS] Failed to watch device.toml")
+	err = w.Add(cfgDir + "/automation.toml")
+	utils.CheckFatalError(err, "[FS] Failed to watch automation.toml")
 
 	go func() {
 		for {
@@ -148,5 +150,5 @@ func startWatchingConfigFile(cfgFile string, ch chan serverEvent) {
 	}()
 
 	err = w.Start(time.Millisecond * 100)
-	utils.CheckFatalError(err, "[FS] Failed to start watching file")
+	utils.CheckFatalError(err, "[FS] Failed to start watching files")
 }

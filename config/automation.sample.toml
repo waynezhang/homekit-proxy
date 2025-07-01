@@ -1,0 +1,5 @@
+ [[Automations]]
+ Name="Turn off all lights"
+ Cron="0 * * * * *"
+ Cmd="echo 'Running'"
+ Tolerance=5
