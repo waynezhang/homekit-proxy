@@ -132,8 +132,8 @@ func startWatchingConfigFiles(cfgDir string, ch chan serverEvent) {
 	w := watcher.New()
 	w.SetMaxEvents(1)
 	w.FilterOps(watcher.Write)
-	err := w.Add(cfgDir + "/device.toml")
-	utils.CheckFatalError(err, "[FS] Failed to watch device.toml")
+	err := w.Add(cfgDir + "/device.yaml")
+	utils.CheckFatalError(err, "[FS] Failed to watch device.yaml")
 	err = w.Add(cfgDir + "/automation.yaml")
 	utils.CheckFatalError(err, "[FS] Failed to watch automation.yaml")
 

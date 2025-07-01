@@ -131,7 +131,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 			Name:      a.Config.Name,
 			Cmd:       a.Config.Cmd,
 			Cron:      a.Config.Cron,
-			Tolerance: a.Config.Tolerance,
+			Tolerance: a.Config.Offset,
 			LastRun:   a.LastRun,
 			LastError: utils.ErrStringOrEmpty(a.LastError),
 			NextRun:   time.Time{},

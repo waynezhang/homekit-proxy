@@ -59,8 +59,8 @@ type AutomationConfig struct {
 func Parse(configDir string, directory string) Config {
 	config := Config{}
 
-	// Parse device.toml
-	deviceFile := filepath.Join(configDir, "device.toml")
+	// Parse device.yaml
+	deviceFile := filepath.Join(configDir, "device.yaml")
 	vDevice := viper.New()
 	vDevice.SetConfigFile(deviceFile)
 
