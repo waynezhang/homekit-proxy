@@ -22,7 +22,7 @@ type AutomationRunner struct {
 func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
 	now := time.Now()
 
-	next, ref, err := nextRunTime(r.Config.Cron, r.Config.Tolerance, t)
+	next, ref, err := nextRunTime(r.Config.Cron, r.Config.Offset, t)
 	if err != nil {
 		slog.Error("[Automation] Failed to start automation rule", "name", r.Config.Name, "err", err)
 		return
@@ -54,16 +54,16 @@ func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
 	}()
 }
 
-func nextRunTime(cron string, tolerance int, ref time.Time) (time.Time, time.Time, error) {
+func nextRunTime(cron string, offset int, ref time.Time) (time.Time, time.Time, error) {
 	next, err := cadence.Next(cron, ref)
 	if err != nil {
 		return next, next, err
 	}
 
 	m := 0
-	if tolerance != 0 {
+	if offset != 0 {
 		random := rand.New(rand.NewSource(ref.UnixNano()))
-		m = random.Intn(tolerance*2) - tolerance
+		m = random.Intn(offset*2) - offset
 	}
 
 	runTime := next.Add(time.Duration(m) * time.Second)

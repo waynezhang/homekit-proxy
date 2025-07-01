@@ -75,7 +75,7 @@ func new(cfgDir string, dbPath string) *HMManager {
 	}
 	w("[Config] Automations:")
 	for _, a := range automations {
-		w("[Config]   Rule", "name", a.Config.Name, "cmd", a.Config.Cmd, "cron", a.Config.Cron, "tolerance", a.Config.Tolerance)
+		w("[Config]   Rule", "name", a.Config.Name, "cmd", a.Config.Cmd, "cron", a.Config.Cron, "offset", a.Config.Offset)
 	}
 
 	store := hap.NewFsStore(dbPath)
@@ -134,8 +134,8 @@ func startWatchingConfigFiles(cfgDir string, ch chan serverEvent) {
 	w.FilterOps(watcher.Write)
 	err := w.Add(cfgDir + "/device.toml")
 	utils.CheckFatalError(err, "[FS] Failed to watch device.toml")
-	err = w.Add(cfgDir + "/automation.toml")
-	utils.CheckFatalError(err, "[FS] Failed to watch automation.toml")
+	err = w.Add(cfgDir + "/automation.yaml")
+	utils.CheckFatalError(err, "[FS] Failed to watch automation.yaml")
 
 	go func() {
 		for {

@@ -48,12 +48,12 @@ type CharacteristicsConfig struct {
 }
 
 type AutomationConfig struct {
-	Name      string
-	Cron      string
-	Cmd       string
-	Tolerance int
-	Enabled   bool
-	Id        int
+	Name    string
+	Cron    string
+	Cmd     string
+	Offset  int
+	Enabled bool
+	Id      int
 }
 
 func Parse(configDir string, directory string) Config {
@@ -77,8 +77,8 @@ func Parse(configDir string, directory string) Config {
 	config.Bridge = deviceConfig.Bridge
 	config.Accessories = deviceConfig.Accessories
 
-	// Parse automation.toml
-	automationFile := filepath.Join(configDir, "automation.toml")
+	// Parse automation.yaml
+	automationFile := filepath.Join(configDir, "automation.yaml")
 	vAutomation := viper.New()
 	vAutomation.SetConfigFile(automationFile)
 
