@@ -1,98 +1,15 @@
-[Bridge]
-Name="HKP Dev"
-Model="Model one"
-Manufacturer="Awesome Manufacturer"
-Firmware="1.0.0"
+bridge:
+  name: "HKP"
+  pincode: "00000000"
 
-PinCode="600800"
-
-############## AC
-
-[[Accessories]]
-Id = 100001
-Name="Living AC Dev"
-Manufacturer="AC Manufacturer"
-Model="-"
-Firmware="1.0.0"
-# https://github.com/brutella/hap/blob/master/accessory
-TypeByte=21
-
-[[Accessories.Services]]
-# https://github.com/brutella/hap/tree/master/service
-TypeString="BC"
-
-# Active
-[[Accessories.Services.Characteristics]]
-Type="Active"
-Poll=5
-Set="echo Set"
-Get="echo 1"
-
-# Current Heater Cooler State
-[[Accessories.Services.Characteristics]]
-Type="CurrentHeaterCoolerState"
-Poll=5
-Set="echo Set"
-Get="echo CurrentHeaterCoolerStateCooling"
-
-# Target Heater Cooler State
-[[Accessories.Services.Characteristics]]
-Type="TargetHeaterCoolerState"
-Poll=5
-Set="echo Set"
-Get="echo TargetHeaterCoolerStateCool"
-
-# Current Temperature
-[[Accessories.Services.Characteristics]]
-Type="CurrentTemperature"
-Poll=5
-Set="echo Set"
-Get="echo 21"
-
-# Rotation Speed
-[[Accessories.Services.Characteristics]]
-Type="RotationSpeed"
-Poll=5
-Set="echo Set"
-Get="echo 1"
-
-# Cooling Threshold Temperature
-[[Accessories.Services.Characteristics]]
-Type="CoolingThresholdTemperature"
-Poll=5
-Set="echo Set"
-Get="echo 10"
-
-# Heating Threshold Temperature
-[[Accessories.Services.Characteristics]]
-Type="HeatingThresholdTemperature"
-Poll=5
-Set="echo Set"
-Get="echo 10"
-
-############## Light
-
-[[Accessories]]
-Id = 200001
-Name="Light Dev"
-Manufacturer="Light Manufacturer"
-Model="-"
-Firmware="1.0.0"
-# https://github.com/brutella/hap/blob/master/accessory
-TypeByte=5
-
-[[Accessories.Services]]
-# https://github.com/brutella/hap/tree/master/service
-TypeString="43"
-
-[[Accessories.Services.Characteristics]]
-Type="On"
-Poll=5
-Set="echo Set"
-Get="echo true"
-
-[[Automations]]
-Name="Turn off all lights"
-Cron="0 * * * * *"
-Cmd="echo 'Running'"
-Tolerance=5
+accessories:
+  - id: 100001
+    name: "Some Light"
+    typebyte: 5
+    services:
+      - typestring: "43"
+        characteristics:
+          - type: "On"
+            poll: 60
+            set: "./scripts/turn_light.sh"
+            get: "./scripts/get_light.sh"

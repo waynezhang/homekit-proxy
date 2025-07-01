@@ -15,21 +15,15 @@ type Config struct {
 }
 
 type BridgeConfig struct {
-	Name         string
-	Manufacturer string
-	Model        string
-	Firmware     string
-	PinCode      string
+	Name    string
+	PinCode string
 }
 
 type AccessoriesConfig struct {
-	Id           int
-	Name         string
-	Manufacturer string
-	Model        string
-	Firmware     string
-	TypeByte     int
-	Services     []ServicesConfig
+	Id       int
+	Name     string
+	TypeByte int
+	Services []ServicesConfig
 }
 
 type ServicesConfig struct {

@@ -18,10 +18,7 @@ type rootBridge struct {
 
 func parseConfig(cfg *config.Config) *rootBridge {
 	bridge := accessory.NewBridge(accessory.Info{
-		Name:         cfg.Bridge.Name,
-		Model:        cfg.Bridge.Model,
-		Manufacturer: cfg.Bridge.Manufacturer,
-		Firmware:     cfg.Bridge.Firmware,
+		Name: cfg.Bridge.Name,
 	})
 	bridge.Id = 1
 
@@ -65,10 +62,7 @@ func parseConfig(cfg *config.Config) *rootBridge {
 func accessoryFromConfig(ac *config.AccessoriesConfig) *accessory.A {
 	return accessory.New(
 		accessory.Info{
-			Name:         ac.Name,
-			Model:        ac.Model,
-			Manufacturer: ac.Manufacturer,
-			Firmware:     ac.Firmware,
+			Name: ac.Name,
 		},
 		byte(ac.TypeByte),
 	)

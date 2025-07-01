@@ -1,5 +1,6 @@
- [[Automations]]
- Name="Turn off all lights"
- Cron="0 * * * * *"
- Cmd="echo 'Running'"
- Tolerance=5
+automations:
+  - id: 1
+    name: "Turn off all"
+    cron: "0 0 * * * *"
+    cmd: "echo 'Running'"
+    offset: 60 
