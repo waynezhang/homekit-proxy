@@ -13,7 +13,7 @@ require (
 	github.com/brutella/dnssd v1.2.14 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-chi/chi v1.5.5 // indirect
-	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
 	github.com/miekg/dns v1.1.65 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
