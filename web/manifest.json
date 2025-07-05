@@ -1,0 +1,22 @@
+{
+  "name": "HomeKit Proxy",
+  "short_name": "HomeKit Proxy",
+  "description": "Modern HomeKit Proxy Control Panel",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTIgMkw2IDhWMjBIMThWOEwxMiAyWiIgZmlsbD0iIzI1NjNlYiIvPgo8cGF0aCBkPSJNOSAxMUgxNVYxM0g5VjExWiIgZmlsbD0id2hpdGUiLz4KPHA+CiZsdDtzdmcgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiZmaWxsPSIjMjU2M2ViIj4KPHBhdGggZD0iTTEyIDJMNiA4VjIwSDE4VjhMMTIgMloiLz4KPHA+",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTIgMkw2IDhWMjBIMThWOEwxMiAyWiIgZmlsbD0iIzI1NjNlYiIvPgo8cGF0aCBkPSJNOSAxMUgxNVYxM0g5VjExWiIgZmlsbD0id2hpdGUiLz4KPHA+",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

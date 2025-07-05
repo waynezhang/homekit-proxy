@@ -22,6 +22,7 @@ type CharacteristicsStat struct {
 	Min   string `json:"min"`
 	Max   string `json:"max"`
 	Step  string `json:"step"`
+	Area  string `json:"area"`
 }
 
 type Stat struct {

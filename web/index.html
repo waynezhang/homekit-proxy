@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeKit Proxy</title>
+    <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Custom CSS for mobile optimizations -->
+    <style>
+        .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .card-shadow-hover {
+            transition: box-shadow 0.15s ease;
+        }
+        .card-shadow-hover:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .safe-area {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        .glass {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+        @media (max-width: 640px) {
+            .mobile-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <div id="app" class="safe-area min-h-screen">
+        <!-- Header -->
+        <header class="glass sticky top-0 z-50 border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-900">{{ data.name || 'HomeKit Proxy' }}</h1>
+                        <p class="text-sm text-gray-500">{{ formatDate(data.now) }}</p>
+                    </div>
+                    <button 
+                        @click="refreshData"
+                        :disabled="loading"
+                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                        <svg class="w-4 h-4 mr-1" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Alerts -->
+        <div v-if="alert.message" class="max-w-7xl mx-auto px-4 py-4">
+            <div 
+                :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-blue-50 border-blue-200 text-blue-800'"
+                class="border rounded-lg p-4 flex items-start"
+            >
+                <svg 
+                    :class="alert.type === 'error' ? 'text-red-400' : 'text-blue-400'"
+                    class="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" 
+                    fill="currentColor" 
+                    viewBox="0 0 20 20"
+                >
+                    <path v-if="alert.type === 'error'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    <path v-else fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                <div class="flex-1">
+                    <p class="font-medium">{{ alert.message }}</p>
+                </div>
+                <button @click="alert.message = ''" class="ml-3 text-gray-400 hover:text-gray-600">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
+            <!-- Characteristics Section -->
+            <section>
+                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Areas
+                </h2>
+                
+                <!-- Group characteristics by area -->
+                <div class="space-y-8">
+                    <div 
+                        v-for="(accessories, areaName) in groupedCharacteristics" 
+                        :key="areaName"
+                        class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden"
+                    >
+                        <!-- Area Header -->
+                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                {{ areaName }}
+                                <span class="ml-2 text-sm font-normal text-gray-500">
+                                    ({{ Object.keys(accessories).length }} accessor{{ Object.keys(accessories).length !== 1 ? 'ies' : 'y' }})
+                                </span>
+                            </h3>
+                        </div>
+                        
+                        <!-- Accessories within Area - Grid Layout -->
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                                <div 
+                                    v-for="(characteristics, accessoryName) in accessories" 
+                                    :key="accessoryName"
+                                    class="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                                >
+                                    <!-- Accessory Header -->
+                                    <div class="mb-3">
+                                        <h4 class="text-sm font-semibold text-gray-800 flex items-center">
+                                            <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h4a1 1 0 011 1v5m-6 0V9a1 1 0 011-1h4a1 1 0 011 1v11"></path>
+                                            </svg>
+                                            {{ accessoryName }}
+                                            <span class="ml-2 text-xs font-normal text-gray-500">
+                                                ({{ characteristics.length }})
+                                            </span>
+                                        </h4>
+                                    </div>
+                                    
+                                    <!-- Characteristics within Accessory -->
+                                    <div class="space-y-3">
+                                        <div 
+                                            v-for="(typeCharacteristics, characteristicType) in groupCharacteristicsByType(characteristics)" 
+                                            :key="characteristicType"
+                                            class="bg-white rounded-lg p-3 border border-gray-200 hover:bg-gray-50 transition-colors"
+                                        >
+                                        <!-- Characteristic Header -->
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h5 class="text-sm font-medium text-gray-800 truncate">{{ characteristicType }}</h5>
+                                            <span v-if="typeCharacteristics.length > 1" class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                                                {{ typeCharacteristics.length }}
+                                            </span>
+                                        </div>
+                                
+                                        <!-- Single characteristic (most common case) -->
+                                        <div v-if="typeCharacteristics.length === 1">
+                                            <!-- Read-only characteristics -->
+                                            <div v-if="isReadOnly(characteristicType)" class="text-center py-2">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-white text-gray-800 border border-gray-300">
+                                                    {{ typeCharacteristics[0].value }}
+                                                    <span v-if="getUnit(characteristicType)" class="ml-1 text-xs text-gray-500">
+                                                        {{ getUnit(characteristicType) }}
+                                                    </span>
+                                                </span>
+                                            </div>
+                                            
+                                            <!-- Boolean controls -->
+                                            <div v-else-if="isBooleanType(characteristicType)" class="flex space-x-1">
+                                                <button
+                                                    v-for="option in getBooleanOptions(characteristicType)"
+                                                    :key="option.value"
+                                                    @click="updateCharacteristic(typeCharacteristics[0].id, option.value)"
+                                                    :class="typeCharacteristics[0].value === option.value ? 
+                                                        'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'"
+                                                    class="flex-1 py-2 px-3 text-xs font-medium rounded transition-all duration-200"
+                                                >
+                                                    {{ option.label }}
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Range controls -->
+                                            <div v-else-if="isRangeType(characteristicType)" class="space-y-2">
+                                                <div class="text-center">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                                                        {{ Math.round(typeCharacteristics[0].value) }}
+                                                        <span v-if="getUnit(characteristicType)" class="ml-1 text-xs">
+                                                            {{ getUnit(characteristicType) }}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="text-xs text-gray-500">{{ typeCharacteristics[0].min }}</span>
+                                                    <input
+                                                        type="range"
+                                                        :min="typeCharacteristics[0].min"
+                                                        :max="typeCharacteristics[0].max"
+                                                        :value="typeCharacteristics[0].value"
+                                                        @input="updateCharacteristic(typeCharacteristics[0].id, $event.target.value)"
+                                                        class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                    >
+                                                    <span class="text-xs text-gray-500">{{ typeCharacteristics[0].max }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Dropdown controls -->
+                                            <div v-else>
+                                                <select
+                                                    :value="typeCharacteristics[0].value"
+                                                    @change="updateCharacteristic(typeCharacteristics[0].id, $event.target.value)"
+                                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                >
+                                                    <option 
+                                                        v-for="option in getDropdownOptions(characteristicType)" 
+                                                        :key="option"
+                                                        :value="option"
+                                                    >
+                                                        {{ formatOptionLabel(option) }}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Multiple characteristics of same type (rare case) -->
+                                        <div v-else class="space-y-2">
+                                            <div 
+                                                v-for="characteristic in typeCharacteristics" 
+                                                :key="characteristic.id"
+                                                class="bg-white rounded p-2 border border-gray-200"
+                                            >
+                                                <div class="text-xs text-gray-500 mb-1">#{{ characteristic.id }}</div>
+                                                
+                                                <!-- Read-only characteristics -->
+                                                <div v-if="isReadOnly(characteristicType)" class="text-center">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                        {{ characteristic.value }}
+                                                        <span v-if="getUnit(characteristicType)" class="ml-1">
+                                                            {{ getUnit(characteristicType) }}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                                
+                                                <!-- Boolean controls -->
+                                                <div v-else-if="isBooleanType(characteristicType)" class="flex space-x-1">
+                                                    <button
+                                                        v-for="option in getBooleanOptions(characteristicType)"
+                                                        :key="option.value"
+                                                        @click="updateCharacteristic(characteristic.id, option.value)"
+                                                        :class="characteristic.value === option.value ? 
+                                                            'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                        class="flex-1 py-1 px-2 text-xs font-medium rounded transition-colors"
+                                                    >
+                                                        {{ option.label }}
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Range controls -->
+                                                <div v-else-if="isRangeType(characteristicType)" class="space-y-1">
+                                                    <div class="text-center text-xs font-medium">{{ Math.round(characteristic.value) }}</div>
+                                                    <input
+                                                        type="range"
+                                                        :min="characteristic.min"
+                                                        :max="characteristic.max"
+                                                        :value="characteristic.value"
+                                                        @input="updateCharacteristic(characteristic.id, $event.target.value)"
+                                                        class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                    >
+                                                </div>
+                                                
+                                                <!-- Dropdown controls -->
+                                                <div v-else>
+                                                    <select
+                                                        :value="characteristic.value"
+                                                        @change="updateCharacteristic(characteristic.id, $event.target.value)"
+                                                        class="w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    >
+                                                        <option 
+                                                            v-for="option in getDropdownOptions(characteristicType)" 
+                                                            :key="option"
+                                                            :value="option"
+                                                        >
+                                                            {{ formatOptionLabel(option) }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Automations Section -->
+            <section>
+                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Automations
+                </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div 
+                        v-for="automation in data.automations" 
+                        :key="automation.id"
+                        class="bg-white rounded-lg card-shadow card-shadow-hover p-4 border border-gray-200"
+                    >
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-medium text-gray-900 truncate">{{ automation.name }}</h3>
+                                <p class="text-xs text-gray-500 mt-1">#{{ automation.id }}</p>
+                            </div>
+                            <div class="ml-4">
+                                <label class="inline-flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        :checked="automation.enabled"
+                                        @change="updateAutomation(automation.id, $event.target.checked)"
+                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                    >
+                                    <span class="ml-2 text-sm" :class="automation.enabled ? 'text-green-600 font-medium' : 'text-gray-500'">
+                                        {{ automation.enabled ? 'Enabled' : 'Disabled' }}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 text-sm">
+                            <div class="hidden md:block">
+                                <p class="text-gray-500 font-medium mb-1">Command</p>
+                                <code class="block bg-gray-50 p-2 rounded text-xs text-gray-700 break-all">{{ automation.cmd }}</code>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <p class="text-gray-500 font-medium mb-1">Schedule</p>
+                                    <p class="text-gray-700">{{ automation.cron }} ± {{ automation.tolerance }}s</p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 font-medium mb-1">Next Run</p>
+                                    <p class="text-gray-700">{{ formatDate(automation.next_run) || 'N/A' }}</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p class="text-gray-500 font-medium mb-1">Last Run</p>
+                                <p class="text-gray-700">{{ formatDate(automation.last_run) || 'Never' }}</p>
+                            </div>
+                            
+                            <div v-if="automation.last_error" class="bg-red-50 border border-red-200 rounded p-2">
+                                <p class="text-red-600 font-medium text-xs mb-1">Last Error</p>
+                                <p class="text-red-800 text-xs">{{ automation.last_error }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    loading: false,
+                    data: {
+                        now: '',
+                        name: '',
+                        characteristics: [],
+                        automations: []
+                    },
+                    alert: {
+                        message: '',
+                        type: 'info'
+                    }
+                };
+            },
+            computed: {
+                groupedCharacteristics() {
+                    const areaGroups = {};
+                    
+                    // First group by area
+                    this.data.characteristics.forEach(characteristic => {
+                        const area = characteristic.area || 'No Area';
+                        
+                        if (!areaGroups[area]) {
+                            areaGroups[area] = {};
+                        }
+                        
+                        // Then group by accessory name within each area
+                        const accessoryName = characteristic.name.split(' - ')[0];
+                        
+                        if (!areaGroups[area][accessoryName]) {
+                            areaGroups[area][accessoryName] = [];
+                        }
+                        
+                        areaGroups[area][accessoryName].push(characteristic);
+                    });
+                    
+                    // Sort characteristics within each accessory by type
+                    Object.keys(areaGroups).forEach(area => {
+                        Object.keys(areaGroups[area]).forEach(accessory => {
+                            areaGroups[area][accessory].sort((a, b) => a.type.localeCompare(b.type));
+                        });
+                    });
+                    
+                    return areaGroups;
+                }
+            },
+            async mounted() {
+                await this.refreshData();
+                // Auto-refresh every 30 seconds
+                setInterval(() => {
+                    this.refreshData();
+                }, 30000);
+            },
+            methods: {
+                async refreshData() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('/s/all');
+                        if (!response.ok) throw new Error('Failed to fetch data');
+                        this.data = await response.json();
+                        this.alert.message = '';
+                    } catch (error) {
+                        this.showAlert('Failed to load data: ' + error.message, 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
+                async updateCharacteristic(id, value) {
+                    try {
+                        const response = await fetch(`/s/c/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ value: value })
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Update failed');
+                        }
+                        
+                        this.showAlert(`Successfully updated characteristic #${id} to [${value}]`, 'info');
+                        
+                        // Update local data
+                        const characteristic = this.data.characteristics.find(c => c.id == id);
+                        if (characteristic) {
+                            characteristic.value = value;
+                        }
+                    } catch (error) {
+                        this.showAlert('Failed to update characteristic: ' + error.message, 'error');
+                    }
+                },
+                
+                async updateAutomation(id, enabled) {
+                    try {
+                        const response = await fetch(`/s/a/${id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ value: enabled.toString() })
+                        });
+                        
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Update failed');
+                        }
+                        
+                        this.showAlert(`Successfully ${enabled ? 'enabled' : 'disabled'} automation #${id}`, 'info');
+                        
+                        // Update local data
+                        const automation = this.data.automations.find(a => a.id == id);
+                        if (automation) {
+                            automation.enabled = enabled;
+                        }
+                    } catch (error) {
+                        this.showAlert('Failed to update automation: ' + error.message, 'error');
+                    }
+                },
+                
+                showAlert(message, type = 'info') {
+                    this.alert.message = message;
+                    this.alert.type = type;
+                    
+                    // Auto-hide after 5 seconds
+                    setTimeout(() => {
+                        if (this.alert.message === message) {
+                            this.alert.message = '';
+                        }
+                    }, 5000);
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString || dateString === '0001-01-01T00:00:00Z') return '';
+                    const date = new Date(dateString);
+                    return date.toLocaleString();
+                },
+                
+                isReadOnly(type) {
+                    return ['CurrentTemperature', 'CurrentRelativeHumidity', 'CurrentHeaterCoolerState'].includes(type);
+                },
+                
+                isBooleanType(type) {
+                    return ['On', 'Active'].includes(type);
+                },
+                
+                isRangeType(type) {
+                    return ['RotationSpeed', 'CoolingThresholdTemperature', 'HeatingThresholdTemperature'].includes(type);
+                },
+                
+                getBooleanOptions(type) {
+                    if (type === 'On') {
+                        return [
+                            { value: 'true', label: 'On' },
+                            { value: 'false', label: 'Off' }
+                        ];
+                    }
+                    if (type === 'Active') {
+                        return [
+                            { value: 'ActiveActive', label: 'Active' },
+                            { value: 'ActiveInactive', label: 'Inactive' }
+                        ];
+                    }
+                    return [];
+                },
+                
+                getDropdownOptions(type) {
+                    if (type === 'TargetHeaterCoolerState') {
+                        return [
+                            'TargetHeaterCoolerStateAuto',
+                            'TargetHeaterCoolerStateHeat',
+                            'TargetHeaterCoolerStateCool'
+                        ];
+                    }
+                    return [];
+                },
+                
+                formatOptionLabel(option) {
+                    return option.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
+                },
+                
+                getUnit(type) {
+                    if (type === 'CurrentTemperature') return '°C';
+                    if (type === 'CurrentRelativeHumidity') return '%';
+                    return '';
+                },
+                
+                groupCharacteristicsByType(characteristics) {
+                    const groups = {};
+                    characteristics.forEach(characteristic => {
+                        const type = characteristic.type;
+                        if (!groups[type]) {
+                            groups[type] = [];
+                        }
+                        groups[type].push(characteristic);
+                    });
+                    
+                    // Sort characteristics within each type group by ID
+                    Object.keys(groups).forEach(type => {
+                        groups[type].sort((a, b) => a.id - b.id);
+                    });
+                    
+                    return groups;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

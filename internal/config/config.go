@@ -24,6 +24,7 @@ type AccessoriesConfig struct {
 	Id       int
 	Name     string
 	TypeByte int
+	Area     string
 	Services []ServicesConfig
 }
 

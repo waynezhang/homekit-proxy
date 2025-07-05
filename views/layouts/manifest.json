@@ -1,9 +1,0 @@
-{
-  "name": "Homekit Proxy",
-  "short_name": "Homekit Proxy",
-  "description": "Proxy bwtween shell command and HomeKit",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffffe6",
-  "theme_color": "#357edd"
-}

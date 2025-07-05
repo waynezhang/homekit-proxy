@@ -2,19 +2,15 @@ package homekit
 
 import (
 	"net/http"
-	"strings"
 )
 
 func (m *HMManager) startUIHandler() {
-	m.server.ServeMux().HandleFunc("/views/components/{name}", func(res http.ResponseWriter, req *http.Request) {
-		path := strings.TrimPrefix(req.URL.Path, "/views/components/")
-		name := strings.SplitN(path, "/", 2)[0]
-		http.ServeFile(res, req, "views/components/"+name)
-	})
 	m.server.ServeMux().HandleFunc("/manifest.json", func(res http.ResponseWriter, req *http.Request) {
-		http.ServeFile(res, req, "views/layouts/manifest.json")
+		res.Header().Set("Content-Type", "application/json")
+		http.ServeFile(res, req, "web/manifest.json")
 	})
 	m.server.ServeMux().HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
-		http.ServeFile(res, req, "views/layouts/main.html")
+		res.Header().Set("Content-Type", "text/html; charset=utf-8")
+		http.ServeFile(res, req, "web/index.html")
 	})
 }

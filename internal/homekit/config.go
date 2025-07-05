@@ -45,7 +45,7 @@ func parseConfig(cfg *config.Config, actionLog *actionlog.ActionLog) *rootBridge
 				s.AddC(c)
 
 				name := ac.Name + " - " + cc.Type
-				runner := runner.NewCharacteristicRunner(name, &cc, c, actionLog)
+				runner := runner.NewCharacteristicRunner(name, ac.Area, &cc, c, actionLog)
 				runner.Id = nextId
 				nextId++
 				runners = append(runners, runner)

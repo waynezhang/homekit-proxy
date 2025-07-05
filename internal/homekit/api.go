@@ -119,6 +119,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 			Min:   utils.NumberToString(r.C.MinVal),
 			Max:   utils.NumberToString(r.C.MaxVal),
 			Step:  utils.NumberToString(r.C.StepVal),
+			Area:  r.Area,
 		}
 		csts = append(csts, &cst)
 	}
