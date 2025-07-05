@@ -30,6 +30,39 @@ func handleGetAll(m *HMManager) {
 		j, _ := json.MarshalIndent(st, "", "  ")
 		res.Write(j)
 	})
+	m.server.ServeMux().HandleFunc("/s/action_logs", func(res http.ResponseWriter, req *http.Request) {
+		entityID := req.URL.Query().Get("entity_id")
+		characteristicType := req.URL.Query().Get("characteristic_type")
+
+		var logs interface{}
+		var err error
+
+		if entityID != "" && characteristicType != "" {
+			logs, err = m.actionLog.GetLogsByEntityAndCharacteristicType(entityID, characteristicType, 1000)
+		} else if entityID != "" {
+			logs, err = m.actionLog.GetLogsByEntity(entityID, 100)
+		} else {
+			logs, err = m.actionLog.GetRecentLogs(100)
+		}
+
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write([]byte(err.Error()))
+			return
+		}
+		j, _ := json.MarshalIndent(logs, "", "  ")
+		res.Write(j)
+	})
+	m.server.ServeMux().HandleFunc("/s/action_logs/entities", func(res http.ResponseWriter, req *http.Request) {
+		entities, err := m.actionLog.GetDistinctEntityIDs()
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write([]byte(err.Error()))
+			return
+		}
+		j, _ := json.MarshalIndent(entities, "", "  ")
+		res.Write(j)
+	})
 }
 
 func handleUpdate(m *HMManager) {

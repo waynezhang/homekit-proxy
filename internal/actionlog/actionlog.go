@@ -186,6 +186,62 @@ func (al *ActionLog) GetLogsByEntity(entityID string, limit int) ([]LogEntry, er
 	return logs, nil
 }
 
+func (al *ActionLog) GetLogsByEntityAndCharacteristicType(entityID, characteristicType string, limit int) ([]LogEntry, error) {
+	query := `
+	SELECT id, entity_id, characteristic_type, new_value, timestamp
+	FROM action_logs
+	WHERE entity_id = ? AND characteristic_type = ?
+	ORDER BY timestamp ASC
+	LIMIT ?
+	`
+
+	rows, err := al.db.Query(query, entityID, characteristicType, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query logs: %w", err)
+	}
+	defer rows.Close()
+
+	var logs []LogEntry
+	for rows.Next() {
+		var log LogEntry
+
+		err := rows.Scan(&log.ID, &log.EntityID, &log.CharacteristicType,
+			&log.NewValue, &log.Timestamp)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+
+		logs = append(logs, log)
+	}
+
+	return logs, nil
+}
+
+func (al *ActionLog) GetDistinctEntityIDs() ([]string, error) {
+	query := `
+	SELECT DISTINCT entity_id
+	FROM action_logs
+	ORDER BY entity_id
+	`
+
+	rows, err := al.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query distinct entity ids: %w", err)
+	}
+	defer rows.Close()
+
+	var entityIDs []string
+	for rows.Next() {
+		var entityID string
+		if err := rows.Scan(&entityID); err != nil {
+			return nil, fmt.Errorf("failed to scan entity id: %w", err)
+		}
+		entityIDs = append(entityIDs, entityID)
+	}
+
+	return entityIDs, nil
+}
+
 func (al *ActionLog) Close() error {
 	return al.db.Close()
 }

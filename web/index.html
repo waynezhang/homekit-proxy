@@ -11,7 +11,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Vue 3 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom CSS for mobile optimizations -->
     <style>
@@ -139,6 +142,16 @@
                             {{ data.automations.length }}
                         </span>
                     </button>
+                    <button
+                        @click="activeTab = 'action_logs'"
+                        :class="activeTab === 'action_logs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                        </svg>
+                        Action Log
+                    </button>
                 </nav>
             </div>
 
@@ -202,9 +215,14 @@
                                         <!-- Characteristic Header -->
                                         <div class="flex items-center justify-between mb-2">
                                             <h5 class="text-sm font-medium text-gray-800 truncate">{{ characteristicType }}</h5>
-                                            <span v-if="typeCharacteristics.length > 1" class="text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
-                                                {{ typeCharacteristics.length }}
-                                            </span>
+                                            <div class="flex items-center">
+                                                <button v-if="typeCharacteristics.length === 1" @click="showCharacteristicLog(typeCharacteristics[0])" class="text-xs text-gray-400 hover:text-blue-500">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                                </button>
+                                                <span v-if="typeCharacteristics.length > 1" class="ml-2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                                                    {{ typeCharacteristics.length }}
+                                                </span>
+                                            </div>
                                         </div>
                                 
                                         <!-- Single characteristic (most common case) -->
@@ -282,7 +300,12 @@
                                                 :key="characteristic.id"
                                                 class="bg-white rounded p-2 border border-gray-200"
                                             >
-                                                <div class="text-xs text-gray-500 mb-1">#{{ characteristic.id }}</div>
+                                                <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                                                    <span>#{{ characteristic.id }}</span>
+                                                    <button @click="showCharacteristicLog(characteristic)" class="text-xs text-gray-400 hover:text-blue-500">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                                                    </button>
+                                                </div>
                                                 
                                                 <!-- Read-only characteristics -->
                                                 <div v-if="isReadOnly(characteristicType)" class="text-center">
@@ -443,6 +466,51 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Action Log Tab -->
+            <section v-show="activeTab === 'action_logs'">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                    </svg>
+                    Action Log
+                </h2>
+                <div class="mb-6 max-h-80" v-show="entityIdFilter">
+                    <canvas id="actionLogChart"></canvas>
+                </div>
+                <div class="mb-4">
+                    <div class="flex items-center">
+                        <select v-model="entityIdFilter" @change="fetchActionLogs" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All</option>
+                            <option v-for="entityId in entityIds" :key="entityId" :value="entityId">{{ entityId }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Value</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr v-for="log in actionLogs" :key="log.id">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.entity_id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.characteristic_type }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.new_value }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(log.timestamp) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -460,10 +528,14 @@
                         characteristics: [],
                         automations: []
                     },
+                    actionLogs: [],
+                    entityIdFilter: '',
+                    entityIds: [],
                     alert: {
                         message: '',
                         type: 'info'
-                    }
+                    },
+                    chart: null
                 };
             },
             computed: {
@@ -519,6 +591,14 @@
                     return groups;
                 }
             },
+            watch: {
+                activeTab(newTab) {
+                    if (newTab === 'action_logs') {
+                        this.fetchActionLogs();
+                        this.fetchEntityIds();
+                    }
+                }
+            },
             async mounted() {
                 await this.refreshData();
                 // Auto-refresh every 30 seconds
@@ -527,6 +607,85 @@
                 }, 30000);
             },
             methods: {
+                async fetchEntityIds() {
+                    try {
+                        const response = await fetch('/s/action_logs/entities');
+                        if (!response.ok) throw new Error('Failed to fetch entity IDs');
+                        this.entityIds = await response.json();
+                    } catch (error) {
+                        this.showAlert('Failed to load entity IDs: ' + error.message, 'error');
+                    }
+                },
+                async fetchActionLogs() {
+                    try {
+                        let url = '/s/action_logs';
+                        if (this.entityIdFilter) {
+                            url += `?entity_id=${this.entityIdFilter}`;
+                        }
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error('Failed to fetch action logs');
+                        this.actionLogs = await response.json();
+                        this.renderChart();
+                    } catch (error) {
+                        this.showAlert('Failed to load action logs: ' + error.message, 'error');
+                    }
+                },
+                async renderChart() {
+                    const existingChart = Chart.getChart("actionLogChart");
+                    if (existingChart) {
+                        existingChart.destroy();
+                    }
+
+                    const characteristics = this.data.characteristics.filter(c => c.name === this.entityIdFilter);
+                    const characteristicType = characteristics.length > 0 ? characteristics[0].type : 'Unknown';
+
+                    let chartData = {
+                        labels: [],
+                        datasets: [{
+                            label: `${this.entityIdFilter || 'All'} - ${characteristicType}`,
+                            data: [],
+                            fill: false,
+                            borderColor: 'rgb(75, 192, 192)',
+                            tension: 0.1
+                        }]
+                    };
+
+                    if (this.entityIdFilter) {
+                        try {
+                            const response = await fetch(`/s/action_logs?entity_id=${this.entityIdFilter}&characteristic_type=${characteristicType}`);
+                            if (!response.ok) throw new Error('Failed to fetch chart data');
+                            const fetchedData = await response.json();
+                            if (fetchedData && fetchedData.length > 0) {
+                                chartData = {
+                                    labels: fetchedData.map(d => this.formatDate(d.timestamp)),
+                                    datasets: [{
+                                        label: `${this.entityIdFilter} - ${characteristicType}`,
+                                        data: fetchedData.map(d => d.new_value),
+                                        fill: false,
+                                        borderColor: 'rgb(75, 192, 192)',
+                                        tension: 0.1
+                                    }]
+                                };
+                            }
+                        } catch (error) {
+                            this.showAlert('Failed to load chart data: ' + error.message, 'error');
+                            // Continue to render an empty chart on error
+                        }
+                    }
+
+                        const ctx = document.getElementById('actionLogChart').getContext('2d');
+                        this.chart = new Chart(ctx, {
+                            type: 'line',
+                            data: chartData,
+                            options: {
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                },
                 async refreshData() {
                     this.loading = true;
                     try {
@@ -609,6 +768,11 @@
                     }
                 },
                 
+                showCharacteristicLog(characteristic) {
+                    this.activeTab = 'action_logs';
+                    this.entityIdFilter = characteristic.name;
+                },
+
                 showAlert(message, type = 'info') {
                     this.alert.message = message;
                     this.alert.type = type;
@@ -708,4 +872,5 @@
         }).mount('#app');
     </script>
 </body>
+
 </html>
