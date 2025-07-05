@@ -4,10 +4,12 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/brutella/hap"
 	"github.com/radovskyb/watcher"
+	"github.com/waynezhang/homekit-proxy/internal/actionlog"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/runner"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
@@ -18,6 +20,7 @@ type HMManager struct {
 	server      *hap.Server
 	root        *rootBridge
 	automations []*runner.AutomationRunner
+	actionLog   *actionlog.ActionLog
 	cancel      context.CancelFunc
 }
 
@@ -65,7 +68,13 @@ func Serve(cfgDir string, dbPath string) {
 
 func new(cfgDir string, dbPath string) *HMManager {
 	cfg := config.Parse(cfgDir, dbPath)
-	root := parseConfig(&cfg)
+	
+	// Initialize action log
+	actionLogPath := filepath.Join(dbPath, "action_log.db")
+	actionLog, err := actionlog.New(actionLogPath)
+	utils.CheckFatalError(err, "[ActionLog] Failed to initialize action log")
+	
+	root := parseConfig(&cfg, actionLog)
 	automations := automationRunnersFromConfig(cfg.Automations)
 
 	var w = slog.Info
@@ -102,6 +111,7 @@ func new(cfgDir string, dbPath string) *HMManager {
 		server:      server,
 		root:        root,
 		automations: automations,
+		actionLog:   actionLog,
 	}
 }
 
@@ -125,6 +135,9 @@ func (m *HMManager) start() {
 }
 
 func (m *HMManager) stop() {
+	if m.actionLog != nil {
+		m.actionLog.Close()
+	}
 	m.cancel()
 }
 

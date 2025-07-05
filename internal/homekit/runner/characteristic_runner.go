@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/brutella/hap/characteristic"
+	"github.com/waynezhang/homekit-proxy/internal/actionlog"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	ch "github.com/waynezhang/homekit-proxy/internal/homekit/characteristics"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
@@ -18,13 +19,15 @@ type CharacteristicRunner struct {
 	Config    *config.CharacteristicsConfig
 	C         *characteristic.C
 	LastValue any
+	ActionLog *actionlog.ActionLog
 }
 
-func NewCharacteristicRunner(name string, config *config.CharacteristicsConfig, c *characteristic.C) *CharacteristicRunner {
+func NewCharacteristicRunner(name string, config *config.CharacteristicsConfig, c *characteristic.C, actionLog *actionlog.ActionLog) *CharacteristicRunner {
 	r := &CharacteristicRunner{
-		Name:   name,
-		Config: config,
-		C:      c,
+		Name:      name,
+		Config:    config,
+		C:         c,
+		ActionLog: actionLog,
 	}
 
 	r.C.OnCValueUpdate(func(c *characteristic.C, new, old interface{}, req *http.Request) {
@@ -35,6 +38,8 @@ func NewCharacteristicRunner(name string, config *config.CharacteristicsConfig, 
 
 		param := ch.ConvertValueToCommandLine(new, r.Config.Type)
 		r.RunSetter(param)
+
+		r.ActionLog.LogAction(r.Name, r.Config.Type, param)
 	})
 
 	return r
@@ -72,6 +77,8 @@ func (r *CharacteristicRunner) runGetter() {
 			r.LastValue = val
 			r.C.SetValueRequest(val, nil)
 		}
+		valStr := ch.ConvertValueToCommandLine(val, r.Config.Type)
+		r.ActionLog.LogAction(r.Name, r.Config.Type, valStr)
 	} else {
 		slog.Error("[Characteristcs] No value parsed")
 	}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/brutella/hap/accessory"
 	"github.com/brutella/hap/service"
+	"github.com/waynezhang/homekit-proxy/internal/actionlog"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/characteristics"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/runner"
@@ -16,7 +17,7 @@ type rootBridge struct {
 	runners     []*runner.CharacteristicRunner
 }
 
-func parseConfig(cfg *config.Config) *rootBridge {
+func parseConfig(cfg *config.Config, actionLog *actionlog.ActionLog) *rootBridge {
 	bridge := accessory.NewBridge(accessory.Info{
 		Name: cfg.Bridge.Name,
 	})
@@ -44,7 +45,7 @@ func parseConfig(cfg *config.Config) *rootBridge {
 				s.AddC(c)
 
 				name := ac.Name + " - " + cc.Type
-				runner := runner.NewCharacteristicRunner(name, &cc, c)
+				runner := runner.NewCharacteristicRunner(name, &cc, c, actionLog)
 				runner.Id = nextId
 				nextId++
 				runners = append(runners, runner)
