@@ -14,7 +14,7 @@ FROM alpine:latest
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache tzdata
+RUN apk add --no-cache tzdata py3-requests
 COPY --from=build /go/src/app/bin/hkp /app/hkp
 COPY web ./web
 
