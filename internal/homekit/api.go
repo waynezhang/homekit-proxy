@@ -120,6 +120,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 			Max:   utils.NumberToString(r.C.MaxVal),
 			Step:  utils.NumberToString(r.C.StepVal),
 			Area:  r.Area,
+			Icon:  r.Icon,
 		}
 		csts = append(csts, &cst)
 	}

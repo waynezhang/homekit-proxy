@@ -17,16 +17,18 @@ type CharacteristicRunner struct {
 	Id        int
 	Name      string
 	Area      string
+	Icon      string
 	Config    *config.CharacteristicsConfig
 	C         *characteristic.C
 	LastValue any
 	ActionLog *actionlog.ActionLog
 }
 
-func NewCharacteristicRunner(name string, area string, config *config.CharacteristicsConfig, c *characteristic.C, actionLog *actionlog.ActionLog) *CharacteristicRunner {
+func NewCharacteristicRunner(name string, area string, icon string, config *config.CharacteristicsConfig, c *characteristic.C, actionLog *actionlog.ActionLog) *CharacteristicRunner {
 	r := &CharacteristicRunner{
 		Name:      name,
 		Area:      area,
+		Icon:      icon,
 		Config:    config,
 		C:         c,
 		ActionLog: actionLog,
