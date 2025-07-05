@@ -108,9 +108,42 @@
         </div>
 
         <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-4 py-6 space-y-8">
-            <!-- Characteristics Section -->
-            <section>
+        <main class="max-w-7xl mx-auto px-4 py-6">
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-8">
+                    <button
+                        @click="activeTab = 'characteristics'"
+                        :class="activeTab === 'characteristics' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Characteristics
+                        <span class="ml-2 bg-gray-100 text-gray-900 rounded-full px-2 py-1 text-xs font-medium">
+                            {{ data.characteristics.length }}
+                        </span>
+                    </button>
+                    <button
+                        @click="activeTab = 'automations'"
+                        :class="activeTab === 'automations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center"
+                    >
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Automations
+                        <span class="ml-2 bg-gray-100 text-gray-900 rounded-full px-2 py-1 text-xs font-medium">
+                            {{ data.automations.length }}
+                        </span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Characteristics Tab -->
+            <section v-show="activeTab === 'characteristics'">
                 <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -316,8 +349,8 @@
                 </div>
             </section>
 
-            <!-- Automations Section -->
-            <section>
+            <!-- Automations Tab -->
+            <section v-show="activeTab === 'automations'">
                 <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -416,6 +449,7 @@
             data() {
                 return {
                     loading: false,
+                    activeTab: 'characteristics',
                     data: {
                         now: '',
                         name: '',
