@@ -51,16 +51,7 @@
                             ></hkp-dropdown>
                         </template>
                         <template x-if="c.type == 'CurrentHeaterCoolerState'">
-                            <hkp-dropdown
-                                :options="[
-                                    'CurrentHeaterCoolerStateInactive',
-                                    'CurrentHeaterCoolerStateIdle',
-                                    'CurrentHeaterCoolerStateHeating',
-                                    'CurrentHeaterCoolerStateCooling',
-                                    ]"
-                                x-model="c.value"
-                                @change="$api.$of().updateC(c.id, c.value)"
-                            ></hkp-dropdown>
+                            <span x-text="c.value"></span>
                         </template>
                         <template x-if="c.type == 'TargetHeaterCoolerState'">
                             <hkp-dropdown
@@ -74,6 +65,9 @@
                             ></hkp-dropdown>
                         </template>
                         <template x-if="c.type == 'CurrentTemperature'">
+                            <span x-text="c.value"></span>
+                        </template>
+                        <template x-if="c.type == 'CurrentRelativeHumidity'">
                             <span x-text="c.value"></span>
                         </template>
                         <template
