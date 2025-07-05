@@ -1,16 +1,20 @@
 # Build
-FROM golang:latest as build
+FROM golang:alpine as build
 
 WORKDIR /go/src/app
 
+# Install build dependencies for CGO
+RUN apk add --no-cache make gcc musl-dev
+
 COPY . .
-RUN CGO_ENABLED=0 make build
+RUN CGO_ENABLED=1 make build
 
 # Run
 FROM alpine:latest
 WORKDIR /app
 
-RUN apk add tzdata
+# Install runtime dependencies
+RUN apk add --no-cache tzdata
 COPY --from=build /go/src/app/bin/hkp /app/hkp
 COPY web ./web
 
