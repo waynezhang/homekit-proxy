@@ -114,11 +114,11 @@
         <main class="max-w-7xl mx-auto px-4 py-6">
             <!-- Tab Navigation -->
             <div class="border-b border-gray-200 mb-6">
-                <nav class="-mb-px flex space-x-8">
+                <nav class="-mb-px flex flex-col space-y-2 md:flex-row md:space-x-8">
                     <button
                         @click="activeTab = 'characteristics'"
                         :class="activeTab === 'characteristics' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center"
+                        class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -132,7 +132,7 @@
                     <button
                         @click="activeTab = 'automations'"
                         :class="activeTab === 'automations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center"
+                        class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -145,7 +145,7 @@
                     <button
                         @click="activeTab = 'action_logs'"
                         :class="activeTab === 'action_logs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                        class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center"
+                        class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
@@ -788,7 +788,11 @@
                 formatDate(dateString) {
                     if (!dateString || dateString === '0001-01-01T00:00:00Z') return '';
                     const date = new Date(dateString);
-                    return date.toLocaleString();
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const hours = date.getHours().toString().padStart(2, '0');
+                    const minutes = date.getMinutes().toString().padStart(2, '0');
+                    return `${month}-${day} ${hours}:${minutes}`;
                 },
                 
                 isReadOnly(type) {
