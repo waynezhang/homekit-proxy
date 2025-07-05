@@ -16,11 +16,11 @@ type ActionLog struct {
 }
 
 type LogEntry struct {
-	ID            int64     `json:"id"`
-	EntityID      string    `json:"entity_id"`
+	ID                 int64     `json:"id"`
+	EntityID           string    `json:"entity_id"`
 	CharacteristicType string    `json:"characteristic_type"`
-	NewValue      string    `json:"new_value"`
-	Timestamp     time.Time `json:"timestamp"`
+	NewValue           string    `json:"new_value"`
+	Timestamp          time.Time `json:"timestamp"`
 }
 
 func New(dbPath string) (*ActionLog, error) {
@@ -73,14 +73,14 @@ func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) er
 	ORDER BY timestamp DESC
 	LIMIT 1
 	`
-	
+
 	var lastValue string
 	err := al.db.QueryRow(lastValueQuery, entityID, characteristicType).Scan(&lastValue)
 	if err == nil && lastValue == newValue {
 		slog.Debug("[ActionLog] Skipping duplicate value", "entityID", entityID, "type", characteristicType, "value", newValue)
 		return nil
 	}
-	
+
 	query := `
 	INSERT INTO action_logs (entity_id, characteristic_type, new_value, timestamp)
 	VALUES (?, ?, ?, ?)
@@ -94,6 +94,35 @@ func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) er
 
 	slog.Debug("[ActionLog] Logged action", "entityID", entityID, "type", characteristicType, "newValue", newValue)
 	return nil
+}
+
+func (al *ActionLog) LogAutomationEnabled(automationID int, enabled bool) error {
+	entityID := fmt.Sprintf("%d", automationID)
+	value := "disable"
+	if enabled {
+		value = "enable"
+	}
+	return al.LogAction(entityID, "automation", value)
+}
+
+func (al *ActionLog) GetAutomationEnabled(automationID int, defaultValue bool) bool {
+	entityID := fmt.Sprintf("%d", automationID)
+
+	query := `
+	SELECT new_value FROM action_logs
+	WHERE entity_id = ? AND characteristic_type = 'automation'
+	ORDER BY timestamp DESC
+	LIMIT 1
+	`
+
+	var value string
+	err := al.db.QueryRow(query, entityID).Scan(&value)
+	if err != nil {
+		// No record found, return default
+		return defaultValue
+	}
+
+	return value == "enable"
 }
 
 func (al *ActionLog) GetRecentLogs(limit int) ([]LogEntry, error) {
@@ -113,13 +142,13 @@ func (al *ActionLog) GetRecentLogs(limit int) ([]LogEntry, error) {
 	var logs []LogEntry
 	for rows.Next() {
 		var log LogEntry
-		
-		err := rows.Scan(&log.ID, &log.EntityID, &log.CharacteristicType, 
+
+		err := rows.Scan(&log.ID, &log.EntityID, &log.CharacteristicType,
 			&log.NewValue, &log.Timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
-		
+
 		logs = append(logs, log)
 	}
 
@@ -144,13 +173,13 @@ func (al *ActionLog) GetLogsByEntity(entityID string, limit int) ([]LogEntry, er
 	var logs []LogEntry
 	for rows.Next() {
 		var log LogEntry
-		
-		err := rows.Scan(&log.ID, &log.EntityID, &log.CharacteristicType, 
+
+		err := rows.Scan(&log.ID, &log.EntityID, &log.CharacteristicType,
 			&log.NewValue, &log.Timestamp)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
-		
+
 		logs = append(logs, log)
 	}
 
@@ -160,3 +189,4 @@ func (al *ActionLog) GetLogsByEntity(entityID string, limit int) ([]LogEntry, er
 func (al *ActionLog) Close() error {
 	return al.db.Close()
 }
+

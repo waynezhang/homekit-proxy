@@ -67,13 +67,12 @@ func Serve(cfgDir string, dbPath string) {
 }
 
 func new(cfgDir string, dbPath string) *HMManager {
-	cfg := config.Parse(cfgDir, dbPath)
-	
-	// Initialize action log
+	// Initialize action log first
 	actionLogPath := filepath.Join(dbPath, "action_log.db")
 	actionLog, err := actionlog.New(actionLogPath)
 	utils.CheckFatalError(err, "[ActionLog] Failed to initialize action log")
 	
+	cfg := config.Parse(cfgDir, dbPath, actionLog)
 	root := parseConfig(&cfg, actionLog)
 	automations := automationRunnersFromConfig(cfg.Automations)
 

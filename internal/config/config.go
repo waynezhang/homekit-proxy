@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/viper"
+	"github.com/waynezhang/homekit-proxy/internal/actionlog"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
 
@@ -11,7 +12,7 @@ type Config struct {
 	Bridge      BridgeConfig
 	Accessories []*AccessoriesConfig
 	Automations []*AutomationConfig
-	kv          *kv
+	actionLog   *actionlog.ActionLog
 }
 
 type BridgeConfig struct {
@@ -50,7 +51,7 @@ type AutomationConfig struct {
 	Id      int
 }
 
-func Parse(configDir string, directory string) Config {
+func Parse(configDir string, directory string, actionLog *actionlog.ActionLog) Config {
 	config := Config{}
 
 	// Parse device.yaml
@@ -86,10 +87,11 @@ func Parse(configDir string, directory string) Config {
 	utils.CheckFatalError(err, "Failed to parse automation config file %s", automationFile)
 
 	config.Automations = automationConfig.Automations
+	config.actionLog = actionLog
 
-	config.kv = newKV(filepath.Join(directory, "automation-config.json"))
+	// Load automation enabled state from action log
 	for _, a := range config.Automations {
-		a.Enabled = config.kv.getBool(a.Id, true)
+		a.Enabled = actionLog.GetAutomationEnabled(a.Id, true)
 	}
 
 	return config
@@ -99,7 +101,7 @@ func (cfg *Config) SetAutomationEnabled(id int, enabled bool) {
 	for _, a := range cfg.Automations {
 		if a.Id == id {
 			a.Enabled = enabled
-			cfg.kv.setBool(id, enabled)
+			cfg.actionLog.LogAutomationEnabled(id, enabled)
 			break
 		}
 	}
