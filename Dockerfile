@@ -12,6 +12,6 @@ WORKDIR /app
 
 RUN apk add tzdata
 COPY --from=build /go/src/app/bin/hkp /app/hkp
-COPY views ./views
+COPY web ./web
 
 ENTRYPOINT ["/app/hkp", "serve", "-v", "-d", "/db", "-c", "/config"]
