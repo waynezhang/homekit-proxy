@@ -101,12 +101,39 @@ func handleUpdate(m *HMManager) {
 		m.config.SetAutomationEnabled(id, enabled)
 		res.Write([]byte("{\"result\": \"OK\"}"))
 	})
+    m.server.ServeMux().HandleFunc("/s/a/{id}/run", func(res http.ResponseWriter, req *http.Request) {
+        if req.Method != "POST" {
+            res.WriteHeader(http.StatusBadRequest)
+            res.Write([]byte("Invalid method"))
+            return
+        }
+
+        path := strings.TrimPrefix(req.URL.Path, "/s/a/")
+        id, err := strconv.Atoi(strings.SplitN(path, "/", 2)[0])
+        if err != nil {
+            res.WriteHeader(http.StatusBadRequest)
+            res.Write([]byte("Invalid id"))
+            return
+        }
+
+        slog.Info("[API] Run automation", "id", id)
+
+        err = m.runAutomation(id)
+        if err != nil {
+            res.WriteHeader(http.StatusInternalServerError)
+            res.Write([]byte(err.Error()))
+            return
+        }
+
+        res.Write([]byte("{\"result\": \"OK\"}"))
+    })
 }
 
 func (m *HMManager) getAllStat() stat.Stat {
-	st := stat.Stat{
-		Now:  time.Now(),
-		Name: m.root.b.Name(),
+    st := stat.Stat{
+        Now:  time.Now(),
+        Name: m.root.b.Name(),
+
 	}
 
 	csts := []*stat.CharacteristicsStat{}

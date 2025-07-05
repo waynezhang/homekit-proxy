@@ -389,7 +389,13 @@
                                 <h3 class="text-sm font-medium text-gray-900 truncate">{{ automation.name }}</h3>
                                 <p class="text-xs text-gray-500 mt-1">#{{ automation.id }}</p>
                             </div>
-                            <div class="ml-4">
+                            <div class="ml-4 flex items-center">
+                                <button
+                                    @click="runAutomation(automation.id)"
+                                    class="mr-2 inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                >
+                                    Run
+                                </button>
                                 <label class="inline-flex items-center">
                                     <input
                                         type="checkbox"
@@ -582,6 +588,24 @@
                         }
                     } catch (error) {
                         this.showAlert('Failed to update automation: ' + error.message, 'error');
+                    }
+                },
+
+                async runAutomation(id) {
+                    try {
+                        const response = await fetch(`/s/a/${id}/run`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        });
+
+                        if (!response.ok) {
+                            const error = await response.json();
+                            throw new Error(error.message || 'Run failed');
+                        }
+
+                        this.showAlert(`Successfully ran automation #${id}`, 'info');
+                    } catch (error) {
+                        this.showAlert('Failed to run automation: ' + error.message, 'error');
                     }
                 },
                 

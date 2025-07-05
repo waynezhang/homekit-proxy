@@ -133,6 +133,19 @@ func (m *HMManager) start() {
 	slog.Info("[Server] Server is stopped", "reason", err)
 }
 
+func (m *HMManager) runAutomation(id int) error {
+	for _, r := range m.automations {
+		if r.Config.Id == id {
+			slog.Info("[Automation] Running automation", "id", id)
+			_, err := utils.Exec(r.Config.Cmd)
+			r.LastRun = time.Now()
+			r.LastError = err
+			return err
+		}
+	}
+	return nil
+}
+
 func (m *HMManager) stop() {
 	if m.actionLog != nil {
 		m.actionLog.Close()
