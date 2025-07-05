@@ -137,6 +137,7 @@ func (m *HMManager) getAllStat() stat.Stat {
 			LastError: utils.ErrStringOrEmpty(a.LastError),
 			NextRun:   time.Time{},
 			Enabled:   a.Config.Enabled,
+			Group:     a.Config.Group,
 		}
 		if a.Config.Enabled {
 			ast.NextRun = a.NextRun

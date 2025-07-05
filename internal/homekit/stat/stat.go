@@ -12,6 +12,7 @@ type AutomationStat struct {
 	LastError string    `json:"last_error"`
 	NextRun   time.Time `json:"next_run"`
 	Enabled   bool      `json:"enabled"`
+	Group     string    `json:"group"`
 }
 
 type CharacteristicsStat struct {

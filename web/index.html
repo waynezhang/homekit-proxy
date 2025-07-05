@@ -318,18 +318,41 @@
 
             <!-- Automations Section -->
             <section>
-                <h2 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     Automations
                 </h2>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                
+                <!-- Group automations by group -->
+                <div class="space-y-8">
                     <div 
-                        v-for="automation in data.automations" 
-                        :key="automation.id"
-                        class="bg-white rounded-lg card-shadow card-shadow-hover p-4 border border-gray-200"
+                        v-for="(automations, groupName) in groupedAutomations" 
+                        :key="groupName"
+                        class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden"
                     >
+                        <!-- Group Header -->
+                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ groupName }}
+                                <span class="ml-2 text-sm font-normal text-gray-500">
+                                    ({{ automations.length }} automation{{ automations.length !== 1 ? 's' : '' }})
+                                </span>
+                            </h3>
+                        </div>
+                        
+                        <!-- Automations within Group -->
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                <div 
+                                    v-for="automation in automations" 
+                                    :key="automation.id"
+                                    class="bg-gray-50 rounded-lg card-shadow card-shadow-hover p-4 border border-gray-200"
+                                >
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-sm font-medium text-gray-900 truncate">{{ automation.name }}</h3>
@@ -350,31 +373,34 @@
                             </div>
                         </div>
                         
-                        <div class="space-y-3 text-sm">
-                            <div class="hidden md:block">
-                                <p class="text-gray-500 font-medium mb-1">Command</p>
-                                <code class="block bg-gray-50 p-2 rounded text-xs text-gray-700 break-all">{{ automation.cmd }}</code>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div>
-                                    <p class="text-gray-500 font-medium mb-1">Schedule</p>
-                                    <p class="text-gray-700">{{ automation.cron }} ± {{ automation.tolerance }}s</p>
+                                    <div class="space-y-3 text-sm">
+                                        <div class="hidden md:block">
+                                            <p class="text-gray-500 font-medium mb-1">Command</p>
+                                            <code class="block bg-gray-50 p-2 rounded text-xs text-gray-700 break-all">{{ automation.cmd }}</code>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div>
+                                                <p class="text-gray-500 font-medium mb-1">Schedule</p>
+                                                <p class="text-gray-700">{{ automation.cron }} ± {{ automation.tolerance }}s</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-gray-500 font-medium mb-1">Next Run</p>
+                                                <p class="text-gray-700">{{ formatDate(automation.next_run) || 'N/A' }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <p class="text-gray-500 font-medium mb-1">Last Run</p>
+                                            <p class="text-gray-700">{{ formatDate(automation.last_run) || 'Never' }}</p>
+                                        </div>
+                                        
+                                        <div v-if="automation.last_error" class="bg-red-50 border border-red-200 rounded p-2">
+                                            <p class="text-red-600 font-medium text-xs mb-1">Last Error</p>
+                                            <p class="text-red-800 text-xs">{{ automation.last_error }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-gray-500 font-medium mb-1">Next Run</p>
-                                    <p class="text-gray-700">{{ formatDate(automation.next_run) || 'N/A' }}</p>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <p class="text-gray-500 font-medium mb-1">Last Run</p>
-                                <p class="text-gray-700">{{ formatDate(automation.last_run) || 'Never' }}</p>
-                            </div>
-                            
-                            <div v-if="automation.last_error" class="bg-red-50 border border-red-200 rounded p-2">
-                                <p class="text-red-600 font-medium text-xs mb-1">Last Error</p>
-                                <p class="text-red-800 text-xs">{{ automation.last_error }}</p>
                             </div>
                         </div>
                     </div>
@@ -432,6 +458,27 @@
                     });
                     
                     return areaGroups;
+                },
+                
+                groupedAutomations() {
+                    const groups = {};
+                    
+                    this.data.automations.forEach(automation => {
+                        const group = automation.group || 'No Group';
+                        
+                        if (!groups[group]) {
+                            groups[group] = [];
+                        }
+                        
+                        groups[group].push(automation);
+                    });
+                    
+                    // Sort automations within each group by name
+                    Object.keys(groups).forEach(group => {
+                        groups[group].sort((a, b) => a.name.localeCompare(b.name));
+                    });
+                    
+                    return groups;
                 }
             },
             async mounted() {

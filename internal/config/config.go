@@ -50,6 +50,7 @@ type AutomationConfig struct {
 	Offset  int
 	Enabled bool
 	Id      int
+	Group   string
 }
 
 func Parse(configDir string, directory string, actionLog *actionlog.ActionLog) Config {
