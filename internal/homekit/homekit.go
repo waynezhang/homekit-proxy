@@ -74,7 +74,7 @@ func new(cfgDir string, dbPath string) *HMManager {
 	
 	cfg := config.Parse(cfgDir, dbPath, actionLog)
 	root := parseConfig(&cfg, actionLog)
-	automations := automationRunnersFromConfig(cfg.Automations)
+	automations := automationRunnersFromConfig(cfg.Automations, actionLog)
 
 	var w = slog.Info
 	w("[Config] Bridge: ", "name", root.b.Name())

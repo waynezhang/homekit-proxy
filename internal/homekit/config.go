@@ -69,14 +69,12 @@ func accessoryFromConfig(ac *config.AccessoriesConfig) *accessory.A {
 	)
 }
 
-func automationRunnersFromConfig(cs []*config.AutomationConfig) []*runner.AutomationRunner {
+func automationRunnersFromConfig(cs []*config.AutomationConfig, actionLog *actionlog.ActionLog) []*runner.AutomationRunner {
 	runners := []*runner.AutomationRunner{}
 
-	nextId := 1
 	for _, a := range cs {
-		r := runner.AutomationRunner{Config: a}
-		r.Id = nextId
-		nextId++
+		r := runner.AutomationRunner{Config: a, ActionLog: actionLog}
+		r.Config.Enabled = a.Enabled
 		runners = append(runners, &r)
 	}
 

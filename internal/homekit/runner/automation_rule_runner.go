@@ -2,11 +2,13 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"math/rand"
 	"time"
 
 	"github.com/bradhe/cadence"
+	"github.com/waynezhang/homekit-proxy/internal/actionlog"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
@@ -17,6 +19,7 @@ type AutomationRunner struct {
 	LastRun   time.Time
 	LastError error
 	NextRun   time.Time
+	ActionLog *actionlog.ActionLog
 }
 
 func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
@@ -44,6 +47,7 @@ func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
 					_, err := utils.Exec(r.Config.Cmd)
 					r.LastRun = time.Now()
 					r.LastError = err
+					r.ActionLog.LogAction(fmt.Sprintf("Automation %d", r.Config.Id), "automation_run", "success")
 				} else {
 					slog.Info("[Automation] Skipping automtion task", "name", r.Config.Name, "cmd", r.Config.Cmd)
 				}

@@ -66,19 +66,21 @@ func (al *ActionLog) initSchema() error {
 }
 
 func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) error {
-	// Check if the new value is the same as the last logged value
-	lastValueQuery := `
-	SELECT new_value FROM action_logs
-	WHERE entity_id = ? AND characteristic_type = ?
-	ORDER BY timestamp DESC
-	LIMIT 1
-	`
+	if characteristicType != "automation_run" {
+		// Check if the new value is the same as the last logged value
+		lastValueQuery := `
+		SELECT new_value FROM action_logs
+		WHERE entity_id = ? AND characteristic_type = ?
+		ORDER BY timestamp DESC
+		LIMIT 1
+		`
 
-	var lastValue string
-	err := al.db.QueryRow(lastValueQuery, entityID, characteristicType).Scan(&lastValue)
-	if err == nil && lastValue == newValue {
-		slog.Debug("[ActionLog] Skipping duplicate value", "entityID", entityID, "type", characteristicType, "value", newValue)
-		return nil
+		var lastValue string
+		err := al.db.QueryRow(lastValueQuery, entityID, characteristicType).Scan(&lastValue)
+		if err == nil && lastValue == newValue {
+			slog.Debug("[ActionLog] Skipping duplicate value", "entityID", entityID, "type", characteristicType, "value", newValue)
+			return nil
+		}
 	}
 
 	query := `
@@ -86,7 +88,7 @@ func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) er
 	VALUES (?, ?, ?, ?)
 	`
 
-	_, err = al.db.Exec(query, entityID, characteristicType, newValue, time.Now())
+	_, err := al.db.Exec(query, entityID, characteristicType, newValue, time.Now())
 	if err != nil {
 		slog.Error("[ActionLog] Failed to log action", "error", err, "entityID", entityID, "type", characteristicType)
 		return fmt.Errorf("failed to log action: %w", err)
@@ -108,7 +110,7 @@ func (al *ActionLog) LogAutomationEnabled(automationID int, enabled bool) error 
 func (al *ActionLog) GetAutomationEnabled(automationID int, defaultValue bool) bool {
 	entityID := fmt.Sprintf("Automation %d", automationID)
 	var value string
-	err := al.db.QueryRow("SELECT new_value FROM action_log WHERE entity_id = ? AND characteristic_type = 'automation' ORDER BY created_at DESC LIMIT 1", entityID).Scan(&value)
+	err := al.db.QueryRow("SELECT new_value FROM action_logs WHERE entity_id = ? AND characteristic_type = 'automation' ORDER BY timestamp DESC LIMIT 1", entityID).Scan(&value)
 	if err != nil {
 		// No record found, return default
 		return defaultValue
@@ -237,4 +239,3 @@ func (al *ActionLog) GetDistinctEntityIDs() ([]string, error) {
 func (al *ActionLog) Close() error {
 	return al.db.Close()
 }
-
