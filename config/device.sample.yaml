@@ -1,0 +1,110 @@
+bridge:
+  name: "HomeKit Proxy Bridge"
+  pincode: "60606060"
+
+accessories:
+
+  - id: 100001
+    name: "Living Room Sensor"
+    typebyte: 10
+    area: Living Room
+    icon: sensor
+    services:
+      - typestring: "8A"
+        characteristics:
+          - type: "CurrentTemperature"
+            poll: 60
+            get: echo "26.0"
+            set: 
+      - typestring: "82"
+        characteristics:
+          - type: "CurrentRelativeHumidity"
+            poll: 60
+            get: echo "78.0"
+            set: 
+
+  - id: 100002
+    name: "Television"
+    typebyte: 8
+    area: Living Room
+    icon: television
+    services:
+      - typestring: "49"
+        characteristics:
+          - type: "On"
+            poll: 60
+            get: echo "true"
+            set: echo "Set to"
+
+  - id: 100003
+    name: "Living Room LIght"
+    typebyte: 5
+    area: Living Room
+    icon: lightbulb
+    services:
+      - typestring: "43"
+        characteristics:
+          - type: "On"
+            poll: 60
+            get: echo "false"
+            set: echo "Set to"
+
+  - id: 100004
+    name: "Air Conditioner"
+    typebyte: 21
+    area: Living Room
+    icon: air-conditioner
+    services:
+      - typestring: "BC"
+        characteristics:
+          - type: "Active"
+            poll: 60
+            get: echo "ActiveActive"
+            set: echo "Turned off"
+          - type: "CurrentHeaterCoolerState"
+            poll: 60
+            get: echo "CurrentHeaterCoolerStateCooling"
+            set: 
+          - type: "TargetHeaterCoolerState"
+            poll: 60
+            get: echo "TargetHeaterCoolerStateCool"
+            set: echo "Set to"
+          - type: "CurrentTemperature"
+            poll: 60
+            get: echo "24"
+            set: echo "Set to" 
+          - type: "RotationSpeed"
+            poll: 60
+            min: 1
+            max: 4
+            step: 1
+            get: echo "1"
+            set: echo "Set to"
+          - type: "CoolingThresholdTemperature"
+            poll: 60
+            min: 20
+            max: 29
+            step: 1
+            get: echo "24"
+            set: echo "Set to"
+          - type: "HeatingThresholdTemperature"
+            poll: 60
+            min: 20
+            max: 28
+            step: 1
+            get: echo "24"
+            set: echo "Set to"
+
+
+  - id: 200001
+    name: "Study Room Light"
+    typebyte: 5
+    area: Study Room
+    icon: lightbulb
+    services:
+      - typestring: "43"
+        characteristics:
+          - type: "On"
+            poll: 60
+            get: echo "false"
+            set: echo "Set to"

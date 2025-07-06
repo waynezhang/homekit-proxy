@@ -1,6 +1,0 @@
-automations:
-  - id: 1
-    name: "Turn off all"
-    cron: "0 0 * * * *"
-    cmd: "echo 'Running'"
-    offset: 60 
