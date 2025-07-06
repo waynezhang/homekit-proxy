@@ -387,7 +387,7 @@
                         class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden"
                     >
                         <!-- Group Header -->
-                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                             <h3 class="text-lg font-medium text-gray-900 flex items-center">
                                 <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -397,6 +397,14 @@
                                     ({{ automations.length }} automation{{ automations.length !== 1 ? 's' : '' }})
                                 </span>
                             </h3>
+                            <button
+                                @click="toggleGroupAutomations(groupName)"
+                                :disabled="loading"
+                                :class="getGroupToggleState(groupName).allEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                            >
+                                {{ getGroupToggleState(groupName).allEnabled ? 'Disable All' : 'Enable All' }}
+                            </button>
                         </div>
                         
                         <!-- Automations within Group -->
@@ -589,6 +597,15 @@
                     });
                     
                     return groups;
+                },
+
+                getGroupToggleState() {
+                    return (groupName) => {
+                        const automationsInGroup = this.data.automations.filter(a => (a.group || 'No Group') === groupName);
+                        const allEnabled = automationsInGroup.every(a => a.enabled);
+                        const allDisabled = automationsInGroup.every(a => !a.enabled);
+                        return { allEnabled, allDisabled };
+                    };
                 }
             },
             watch: {
@@ -607,6 +624,18 @@
                 }, 30000);
             },
             methods: {
+                async toggleGroupAutomations(groupName) {
+                    const automationsInGroup = this.data.automations.filter(a => (a.group || 'No Group') === groupName);
+                    const { allEnabled } = this.getGroupToggleState(groupName);
+                    const targetState = !allEnabled; // If all are enabled, disable them; otherwise, enable them.
+
+                    for (const automation of automationsInGroup) {
+                        if (automation.enabled !== targetState) {
+                            await this.updateAutomation(automation.id, targetState);
+                        }
+                    }
+                    this.showAlert(`Toggled all automations in group '${groupName}' to ${targetState ? 'enabled' : 'disabled'}`, 'info');
+                },
                 async fetchEntityIds() {
                     try {
                         const response = await fetch('/s/action_logs/entities');
