@@ -70,16 +70,28 @@
                         <h1 class="text-xl font-semibold text-gray-900">{{ data.name || 'HomeKit Proxy' }}</h1>
                         <p class="text-sm text-gray-500">{{ formatDate(data.now) }}</p>
                     </div>
-                    <button 
-                        @click="refreshData"
-                        :disabled="loading"
-                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                    >
-                        <svg class="w-4 h-4 mr-1" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                        </svg>
-                        Refresh
-                    </button>
+                    <div class="flex items-center space-x-2">
+                        <button 
+                            @click="refreshData"
+                            :disabled="loading"
+                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                        >
+                            <svg class="w-4 h-4 mr-1" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Refresh
+                        </button>
+                        <button 
+                            v-if="authStatus.enabled"
+                            @click="logout"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -543,7 +555,11 @@
                         message: '',
                         type: 'info'
                     },
-                    chart: null
+                    chart: null,
+                    authStatus: {
+                        enabled: false,
+                        authenticated: false
+                    }
                 };
             },
             computed: {
@@ -617,6 +633,7 @@
                 }
             },
             async mounted() {
+                await this.checkAuthStatus();
                 await this.refreshData();
                 // Auto-refresh every 30 seconds
                 setInterval(() => {
@@ -900,6 +917,26 @@
                     });
                     
                     return groups;
+                },
+
+                async checkAuthStatus() {
+                    try {
+                        const response = await fetch('/api/status');
+                        if (response.ok) {
+                            this.authStatus = await response.json();
+                        }
+                    } catch (error) {
+                        console.warn('Failed to check auth status:', error);
+                    }
+                },
+
+                async logout() {
+                    try {
+                        await fetch('/api/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    } catch (error) {
+                        this.showAlert('Failed to logout: ' + error.message, 'error');
+                    }
                 },
                 
                 getAccessoryIcon(iconType) {

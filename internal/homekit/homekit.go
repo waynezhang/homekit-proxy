@@ -10,6 +10,7 @@ import (
 	"github.com/brutella/hap"
 	"github.com/radovskyb/watcher"
 	"github.com/waynezhang/homekit-proxy/internal/actionlog"
+	"github.com/waynezhang/homekit-proxy/internal/auth"
 	"github.com/waynezhang/homekit-proxy/internal/config"
 	"github.com/waynezhang/homekit-proxy/internal/homekit/runner"
 	"github.com/waynezhang/homekit-proxy/internal/utils"
@@ -21,6 +22,7 @@ type HMManager struct {
 	root        *rootBridge
 	automations []*runner.AutomationRunner
 	actionLog   *actionlog.ActionLog
+	authManager *auth.AuthManager
 	cancel      context.CancelFunc
 }
 
@@ -111,6 +113,7 @@ func new(cfgDir string, dbPath string) *HMManager {
 		root:        root,
 		automations: automations,
 		actionLog:   actionLog,
+		authManager: auth.NewAuthManager(),
 	}
 }
 
@@ -126,6 +129,7 @@ func (m *HMManager) start() {
 	}
 
 	m.startHealthCheckHandler()
+	m.startAuthHandler()
 	m.startAPIHandler()
 	m.startUIHandler()
 

@@ -9,8 +9,8 @@ func (m *HMManager) startUIHandler() {
 		res.Header().Set("Content-Type", "application/json")
 		http.ServeFile(res, req, "web/manifest.json")
 	})
-	m.server.ServeMux().HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
+	m.server.ServeMux().HandleFunc("/", m.authManager.RequireAuth(func(res http.ResponseWriter, req *http.Request) {
 		res.Header().Set("Content-Type", "text/html; charset=utf-8")
 		http.ServeFile(res, req, "web/index.html")
-	})
+	}))
 }

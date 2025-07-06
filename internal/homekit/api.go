@@ -25,12 +25,12 @@ func (m *HMManager) startAPIHandler() {
 }
 
 func handleGetAll(m *HMManager) {
-	m.server.ServeMux().HandleFunc("/s/all", func(res http.ResponseWriter, req *http.Request) {
+	m.server.ServeMux().HandleFunc("/s/all", m.authManager.RequireAuthForAPI(func(res http.ResponseWriter, req *http.Request) {
 		st := m.getAllStat()
 		j, _ := json.MarshalIndent(st, "", "  ")
 		res.Write(j)
-	})
-	m.server.ServeMux().HandleFunc("/s/action_logs", func(res http.ResponseWriter, req *http.Request) {
+	}))
+	m.server.ServeMux().HandleFunc("/s/action_logs", m.authManager.RequireAuthForAPI(func(res http.ResponseWriter, req *http.Request) {
 		entityID := req.URL.Query().Get("entity_id")
 		characteristicType := req.URL.Query().Get("characteristic_type")
 
@@ -52,8 +52,8 @@ func handleGetAll(m *HMManager) {
 		}
 		j, _ := json.MarshalIndent(logs, "", "  ")
 		res.Write(j)
-	})
-	m.server.ServeMux().HandleFunc("/s/action_logs/entities", func(res http.ResponseWriter, req *http.Request) {
+	}))
+	m.server.ServeMux().HandleFunc("/s/action_logs/entities", m.authManager.RequireAuthForAPI(func(res http.ResponseWriter, req *http.Request) {
 		entities, err := m.actionLog.GetDistinctEntityIDs()
 		if err != nil {
 			res.WriteHeader(http.StatusInternalServerError)
@@ -62,11 +62,11 @@ func handleGetAll(m *HMManager) {
 		}
 		j, _ := json.MarshalIndent(entities, "", "  ")
 		res.Write(j)
-	})
+	}))
 }
 
 func handleUpdate(m *HMManager) {
-	m.server.ServeMux().HandleFunc("/s/c/{id}", func(res http.ResponseWriter, req *http.Request) {
+	m.server.ServeMux().HandleFunc("/s/c/{id}", m.authManager.RequireAuthForAPI(func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != "POST" {
 			res.WriteHeader(http.StatusBadRequest)
 			res.Write([]byte("Invalid method"))
@@ -95,9 +95,9 @@ func handleUpdate(m *HMManager) {
 			}
 		}
 		res.Write([]byte("{\"result\": \"OK\"}"))
-	})
+	}))
 
-	m.server.ServeMux().HandleFunc("/s/a/{id}", func(res http.ResponseWriter, req *http.Request) {
+	m.server.ServeMux().HandleFunc("/s/a/{id}", m.authManager.RequireAuthForAPI(func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != "POST" {
 			res.WriteHeader(http.StatusBadRequest)
 			res.Write([]byte("Invalid method"))
@@ -133,8 +133,8 @@ func handleUpdate(m *HMManager) {
 
 		m.config.SetAutomationEnabled(id, enabled)
 		res.Write([]byte("{\"result\": \"OK\"}"))
-	})
-    m.server.ServeMux().HandleFunc("/s/a/{id}/run", func(res http.ResponseWriter, req *http.Request) {
+	}))
+    m.server.ServeMux().HandleFunc("/s/a/{id}/run", m.authManager.RequireAuthForAPI(func(res http.ResponseWriter, req *http.Request) {
         if req.Method != "POST" {
             res.WriteHeader(http.StatusBadRequest)
             res.Write([]byte("Invalid method"))
@@ -159,7 +159,7 @@ func handleUpdate(m *HMManager) {
         }
 
         res.Write([]byte("{\"result\": \"OK\"}"))
-    })
+    }))
 }
 
 func (m *HMManager) getAllStat() stat.Stat {
