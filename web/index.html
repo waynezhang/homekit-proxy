@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HomeKit Proxy</title>
     <meta name="theme-color" content="#343a40">
     <link rel="manifest" href="/manifest.json">
@@ -58,6 +58,11 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+        
+        /* Prevent double-tap zoom */
+        * {
+            touch-action: manipulation;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -97,10 +102,10 @@
         </header>
 
         <!-- Alerts -->
-        <div v-if="alert.message" class="max-w-7xl mx-auto px-4 py-4">
+        <div v-if="alert.message" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-xs sm:max-w-lg w-full mx-4">
             <div 
                 :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'"
-                class="border rounded-lg p-4 flex items-start"
+                class="border rounded-lg p-4 flex items-start shadow-lg"
             >
                 <svg 
                     :class="alert.type === 'error' ? 'text-red-400' : 'text-amber-400'"
@@ -273,17 +278,24 @@
                                                         </span>
                                                     </span>
                                                 </div>
-                                                <div class="flex items-center space-x-2">
-                                                    <span class="text-xs text-gray-500">{{ typeCharacteristics[0].min }}</span>
-                                                    <input
-                                                        type="range"
-                                                        :min="typeCharacteristics[0].min"
-                                                        :max="typeCharacteristics[0].max"
-                                                        :value="typeCharacteristics[0].value"
-                                                        @input="updateCharacteristic(typeCharacteristics[0].id, $event.target.value)"
-                                                        class="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                <div class="flex items-center justify-center space-x-4">
+                                                    <button
+                                                        @click="updateCharacteristic(typeCharacteristics[0].id, String(Math.max(typeCharacteristics[0].min, parseInt(typeCharacteristics[0].value) - 1)))"
+                                                        :disabled="parseInt(typeCharacteristics[0].value) <= typeCharacteristics[0].min"
+                                                        class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-lg font-bold select-none"
+                                                        style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
                                                     >
-                                                    <span class="text-xs text-gray-500">{{ typeCharacteristics[0].max }}</span>
+                                                        -
+                                                    </button>
+                                                    <span class="text-xs text-gray-500 min-w-[3rem] text-center">{{ typeCharacteristics[0].min }} - {{ typeCharacteristics[0].max }}</span>
+                                                    <button
+                                                        @click="updateCharacteristic(typeCharacteristics[0].id, String(Math.min(typeCharacteristics[0].max, parseInt(typeCharacteristics[0].value) + 1)))"
+                                                        :disabled="parseInt(typeCharacteristics[0].value) >= typeCharacteristics[0].max"
+                                                        class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-lg font-bold select-none"
+                                                        style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
+                                                    >
+                                                        +
+                                                    </button>
                                                 </div>
                                             </div>
                                             
@@ -346,14 +358,24 @@
                                                 <!-- Range controls -->
                                                 <div v-else-if="isRangeType(characteristicType)" class="space-y-1">
                                                     <div class="text-center text-xs font-medium">{{ Math.round(characteristic.value) }}</div>
-                                                    <input
-                                                        type="range"
-                                                        :min="characteristic.min"
-                                                        :max="characteristic.max"
-                                                        :value="characteristic.value"
-                                                        @input="updateCharacteristic(characteristic.id, $event.target.value)"
-                                                        class="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                                    >
+                                                    <div class="flex items-center justify-center space-x-2">
+                                                        <button
+                                                            @click="updateCharacteristic(characteristic.id, String(Math.max(characteristic.min, parseInt(characteristic.value) - 1)))"
+                                                            :disabled="parseInt(characteristic.value) <= characteristic.min"
+                                                            class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-sm font-bold select-none"
+                                                            style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <button
+                                                            @click="updateCharacteristic(characteristic.id, String(Math.min(characteristic.max, parseInt(characteristic.value) + 1)))"
+                                                            :disabled="parseInt(characteristic.value) >= characteristic.max"
+                                                            class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-sm font-bold select-none"
+                                                            style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
+                                                        >
+                                                            +
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 
                                                 <!-- Dropdown controls -->
@@ -639,6 +661,16 @@
                 setInterval(() => {
                     this.refreshData();
                 }, 30000);
+                
+                // Prevent double-tap zoom on iOS Safari
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function (event) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
             },
             methods: {
                 async toggleGroupAutomations(groupName) {
@@ -759,13 +791,14 @@
                             throw new Error(error.message || 'Update failed');
                         }
                         
-                        this.showAlert(`Successfully updated characteristic #${id} to [${value}]`, 'info');
-                        
                         // Update local data
                         const characteristic = this.data.characteristics.find(c => c.id == id);
                         if (characteristic) {
                             characteristic.value = value;
                         }
+                        
+                        const characteristicName = characteristic ? characteristic.name : `#${id}`;
+                        this.showAlert(`Updated ${characteristicName} to ${value}`, 'info');
                     } catch (error) {
                         this.showAlert('Failed to update characteristic: ' + error.message, 'error');
                     }
