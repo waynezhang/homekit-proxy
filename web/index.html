@@ -490,7 +490,7 @@
                     <div class="flex items-center">
                         <select v-model="entityIdFilter" @change="fetchActionLogs" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">All</option>
-                            <option v-for="entityId in entityIds" :key="entityId" :value="entityId">{{ entityId }}</option>
+                            <option v-for="entityId in entityIds" :key="entityId" :value="entityId">{{ formatActionLogEntityId(entityId) }}</option>
                         </select>
                     </div>
                 </div>
@@ -509,7 +509,7 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <tr v-for="log in actionLogs" :key="log.id">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.id }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.entity_id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatActionLogEntityId(log.entity_id) }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.characteristic_type }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.new_value }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(log.timestamp) }}</td>
@@ -822,6 +822,17 @@
                     const hours = date.getHours().toString().padStart(2, '0');
                     const minutes = date.getMinutes().toString().padStart(2, '0');
                     return `${month}-${day} ${hours}:${minutes}`;
+                },
+
+                formatActionLogEntityId(entityId) {
+                    if (entityId.startsWith('Automation ')) {
+                        const automationId = parseInt(entityId.replace('Automation ', ''));
+                        const automation = this.data.automations.find(a => a.id === automationId);
+                        if (automation) {
+                            return `#${automationId} (${automation.name})`;
+                        }
+                    }
+                    return entityId;
                 },
                 
                 isReadOnly(type) {
