@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HomeKit Proxy</title>
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#343a40">
     <link rel="manifest" href="/manifest.json">
     
     <!-- Tailwind CSS -->
@@ -74,7 +74,7 @@
                         <button 
                             @click="refreshData"
                             :disabled="loading"
-                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
                         >
                             <svg class="w-4 h-4 mr-1" :class="{ 'animate-spin': loading }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -84,7 +84,7 @@
                         <button 
                             v-if="authStatus.enabled"
                             @click="logout"
-                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
                         >
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -99,11 +99,11 @@
         <!-- Alerts -->
         <div v-if="alert.message" class="max-w-7xl mx-auto px-4 py-4">
             <div 
-                :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-blue-50 border-blue-200 text-blue-800'"
+                :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'"
                 class="border rounded-lg p-4 flex items-start"
             >
                 <svg 
-                    :class="alert.type === 'error' ? 'text-red-400' : 'text-blue-400'"
+                    :class="alert.type === 'error' ? 'text-red-400' : 'text-amber-400'"
                     class="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" 
                     fill="currentColor" 
                     viewBox="0 0 20 20"
@@ -129,7 +129,7 @@
                 <nav class="-mb-px flex flex-col space-y-2 md:flex-row md:space-x-8">
                     <button
                         @click="activeTab = 'characteristics'"
-                        :class="activeTab === 'characteristics' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        :class="activeTab === 'characteristics' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                         class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +143,7 @@
                     </button>
                     <button
                         @click="activeTab = 'automations'"
-                        :class="activeTab === 'automations' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        :class="activeTab === 'automations' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                         class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@
                     </button>
                     <button
                         @click="activeTab = 'action_logs'"
-                        :class="activeTab === 'action_logs' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        :class="activeTab === 'action_logs' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                         class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -170,7 +170,7 @@
             <!-- Characteristics Tab -->
             <section v-show="activeTab === 'characteristics'">
                 <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
@@ -209,7 +209,7 @@
                                     <!-- Accessory Header -->
                                     <div class="mb-3">
                                         <h4 class="text-sm font-semibold text-gray-800 flex items-center">
-                                            <span v-html="getAccessoryIcon(characteristics[0].icon)" class="w-4 h-4 mr-2 text-blue-500"></span>
+                                            <span v-html="getAccessoryIcon(characteristics[0].icon)" class="w-4 h-4 mr-2 text-amber-500"></span>
                                             {{ accessoryName }}
                                             <span class="ml-2 text-xs font-normal text-gray-500">
                                                 ({{ characteristics.length }})
@@ -228,7 +228,7 @@
                                         <div class="flex items-center justify-between mb-2">
                                             <h5 class="text-sm font-medium text-gray-800 truncate">{{ characteristicType }}</h5>
                                             <div class="flex items-center">
-                                                <button v-if="typeCharacteristics.length === 1" @click="showCharacteristicLog(typeCharacteristics[0])" class="text-xs text-gray-400 hover:text-blue-500">
+                                                <button v-if="typeCharacteristics.length === 1" @click="showCharacteristicLog(typeCharacteristics[0])" class="text-xs text-gray-400 hover:text-amber-500">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                                                 </button>
                                                 <span v-if="typeCharacteristics.length > 1" class="ml-2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
@@ -256,7 +256,7 @@
                                                     :key="option.value"
                                                     @click="updateCharacteristic(typeCharacteristics[0].id, option.value)"
                                                     :class="typeCharacteristics[0].value === option.value ? 
-                                                        'bg-blue-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'"
+                                                        'bg-amber-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'"
                                                     class="flex-1 py-2 px-3 text-xs font-medium rounded transition-all duration-200"
                                                 >
                                                     {{ option.label }}
@@ -266,7 +266,7 @@
                                             <!-- Range controls -->
                                             <div v-else-if="isRangeType(characteristicType)" class="space-y-2">
                                                 <div class="text-center">
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
                                                         {{ Math.round(typeCharacteristics[0].value) }}
                                                         <span v-if="getUnit(characteristicType)" class="ml-1 text-xs">
                                                             {{ getUnit(characteristicType) }}
@@ -292,7 +292,7 @@
                                                 <select
                                                     :value="typeCharacteristics[0].value"
                                                     @change="updateCharacteristic(typeCharacteristics[0].id, $event.target.value)"
-                                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                                 >
                                                     <option 
                                                         v-for="option in getDropdownOptions(characteristicType)" 
@@ -314,7 +314,7 @@
                                             >
                                                 <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
                                                     <span>#{{ characteristic.id }}</span>
-                                                    <button @click="showCharacteristicLog(characteristic)" class="text-xs text-gray-400 hover:text-blue-500">
+                                                    <button @click="showCharacteristicLog(characteristic)" class="text-xs text-gray-400 hover:text-amber-500">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                                                     </button>
                                                 </div>
@@ -336,7 +336,7 @@
                                                         :key="option.value"
                                                         @click="updateCharacteristic(characteristic.id, option.value)"
                                                         :class="characteristic.value === option.value ? 
-                                                            'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                            'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
                                                         class="flex-1 py-1 px-2 text-xs font-medium rounded transition-colors"
                                                     >
                                                         {{ option.label }}
@@ -361,7 +361,7 @@
                                                     <select
                                                         :value="characteristic.value"
                                                         @change="updateCharacteristic(characteristic.id, $event.target.value)"
-                                                        class="w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                        class="w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
                                                     >
                                                         <option 
                                                             v-for="option in getDropdownOptions(characteristicType)" 
@@ -413,7 +413,7 @@
                                 @click="toggleGroupAutomations(groupName)"
                                 :disabled="loading"
                                 :class="getGroupToggleState(groupName).allEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'"
-                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
                             >
                                 {{ getGroupToggleState(groupName).allEnabled ? 'Disable All' : 'Enable All' }}
                             </button>
@@ -435,7 +435,7 @@
                             <div class="ml-4 flex items-center">
                                 <button
                                     @click="runAutomation(automation.id)"
-                                    class="mr-2 inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                                    class="mr-2 inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
                                 >
                                     Run
                                 </button>
@@ -444,7 +444,7 @@
                                         type="checkbox"
                                         :checked="automation.enabled"
                                         @change="updateAutomation(automation.id, $event.target.checked)"
-                                        class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                        class="rounded border-gray-300 text-amber-600 shadow-sm focus:border-amber-300 focus:ring focus:ring-amber-200 focus:ring-opacity-50"
                                     >
                                     <span class="ml-2 text-sm" :class="automation.enabled ? 'text-green-600 font-medium' : 'text-gray-500'">
                                         {{ automation.enabled ? 'Enabled' : 'Disabled' }}
@@ -500,7 +500,7 @@
                 </div>
                 <div class="mb-4">
                     <div class="flex items-center">
-                        <select v-model="entityIdFilter" @change="fetchActionLogs" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <select v-model="entityIdFilter" @change="fetchActionLogs" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                             <option value="">All</option>
                             <option v-for="entityId in entityIds" :key="entityId" :value="entityId">{{ formatActionLogEntityId(entityId) }}</option>
                         </select>
