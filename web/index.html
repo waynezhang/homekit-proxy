@@ -156,7 +156,7 @@
         </header>
 
         <!-- Alerts -->
-        <div v-if="alert.message" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-xs sm:max-w-lg w-full mx-4">
+        <div v-if="alert.message" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md sm:max-w-2xl px-4">
             <div 
                 :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/50 dark:border-red-800/50 dark:text-red-400' : 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/50 dark:border-amber-800/50 dark:text-amber-400'"
                 class="border rounded-lg p-4 flex items-start shadow-lg"
