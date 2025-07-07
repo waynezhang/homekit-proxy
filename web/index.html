@@ -4,11 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>HomeKit Proxy</title>
-    <meta name="theme-color" content="#343a40">
+    <meta name="theme-color" content="#f9fafb" id="theme-color">
     <link rel="manifest" href="/manifest.json">
+    
+    <script>
+        // Update theme color based on system theme
+        function updateThemeColor() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const themeColorMeta = document.getElementById('theme-color');
+            themeColorMeta.setAttribute('content', isDark ? '#111827' : '#f9fafb');
+        }
+        
+        // Initial update
+        updateThemeColor();
+        
+        // Listen for theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
+    </script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'media'
+        }
+        
+        // Force update dark mode class on document
+        function updateDarkMode() {
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        
+        // Initial update
+        updateDarkMode();
+        
+        // Listen for theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateDarkMode);
+    </script>
     
     <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
@@ -21,11 +57,17 @@
         .card-shadow {
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
         }
+        .dark .card-shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        }
         .card-shadow-hover {
             transition: box-shadow 0.15s ease;
         }
         .card-shadow-hover:hover {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .dark .card-shadow-hover:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
         }
         .safe-area {
             padding-top: env(safe-area-inset-top);
@@ -36,6 +78,9 @@
         .glass {
             backdrop-filter: blur(10px);
             background: rgba(255, 255, 255, 0.8);
+        }
+        .dark .glass {
+            background: rgba(17, 24, 39, 0.8);
         }
         @media (max-width: 640px) {
             .mobile-grid {
@@ -51,12 +96,21 @@
         ::-webkit-scrollbar-track {
             background: #f1f5f9;
         }
+        .dark ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 3px;
         }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
         }
         
         /* Prevent double-tap zoom */
@@ -65,15 +119,15 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-300">
     <div id="app" class="safe-area min-h-screen">
         <!-- Header -->
-        <header class="glass sticky top-0 z-50 border-b border-gray-200">
+        <header class="glass sticky top-0 z-50 border-b border-gray-200 dark:border-gray-700">
             <div class="max-w-7xl mx-auto px-4 py-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h1 class="text-xl font-semibold text-gray-900">{{ data.name || 'HomeKit Proxy' }}</h1>
-                        <p class="text-sm text-gray-500">{{ formatDate(data.now) }}</p>
+                        <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-50">{{ data.name || 'HomeKit Proxy' }}</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ formatDate(data.now) }}</p>
                     </div>
                     <div class="flex items-center space-x-2">
                         <button 
@@ -89,7 +143,7 @@
                         <button 
                             v-if="authStatus.enabled"
                             @click="logout"
-                            class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
                         >
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
@@ -104,7 +158,7 @@
         <!-- Alerts -->
         <div v-if="alert.message" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 max-w-xs sm:max-w-lg w-full mx-4">
             <div 
-                :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-amber-50 border-amber-200 text-amber-800'"
+                :class="alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/50 dark:border-red-800/50 dark:text-red-400' : 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/50 dark:border-amber-800/50 dark:text-amber-400'"
                 class="border rounded-lg p-4 flex items-start shadow-lg"
             >
                 <svg 
@@ -119,7 +173,7 @@
                 <div class="flex-1">
                     <p class="font-medium">{{ alert.message }}</p>
                 </div>
-                <button @click="alert.message = ''" class="ml-3 text-gray-400 hover:text-gray-600">
+                <button @click="alert.message = ''" class="ml-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -130,11 +184,11 @@
         <!-- Main Content -->
         <main class="max-w-7xl mx-auto px-4 py-6">
             <!-- Tab Navigation -->
-            <div class="border-b border-gray-200 mb-6">
+            <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
                 <nav class="-mb-px flex flex-col space-y-2 md:flex-row md:space-x-8">
                     <button
                         @click="activeTab = 'characteristics'"
-                        :class="activeTab === 'characteristics' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        :class="activeTab === 'characteristics' ? 'border-amber-500 text-amber-600 dark:text-amber-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-50 hover:border-gray-300 dark:hover:border-gray-600'"
                         class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,26 +196,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         Characteristics
-                        <span class="ml-2 bg-gray-100 text-gray-900 rounded-full px-2 py-1 text-xs font-medium">
+                        <span class="ml-2 bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-50 rounded-full px-2 py-1 text-xs font-medium">
                             {{ data.characteristics.length }}
                         </span>
                     </button>
                     <button
                         @click="activeTab = 'automations'"
-                        :class="activeTab === 'automations' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        :class="activeTab === 'automations' ? 'border-amber-500 text-amber-600 dark:text-amber-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-50 hover:border-gray-300 dark:hover:border-gray-600'"
                         class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                         Automations
-                        <span class="ml-2 bg-gray-100 text-gray-900 rounded-full px-2 py-1 text-xs font-medium">
+                        <span class="ml-2 bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-gray-50 rounded-full px-2 py-1 text-xs font-medium">
                             {{ data.automations.length }}
                         </span>
                     </button>
                     <button
                         @click="activeTab = 'action_logs'"
-                        :class="activeTab === 'action_logs' ? 'border-amber-500 text-amber-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                        :class="activeTab === 'action_logs' ? 'border-amber-500 text-amber-600 dark:text-amber-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-50 hover:border-gray-300 dark:hover:border-gray-600'"
                         class="py-2 px-1 border-b-2 font-medium text-sm flex items-center justify-center md:w-auto md:justify-start"
                     >
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,8 +228,8 @@
 
             <!-- Characteristics Tab -->
             <section v-show="activeTab === 'characteristics'">
-                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
@@ -187,17 +241,17 @@
                     <div 
                         v-for="(accessories, areaName) in groupedCharacteristics" 
                         :key="areaName"
-                        class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden"
+                        class="bg-white dark:bg-gray-800 rounded-lg card-shadow border border-gray-200 dark:border-gray-700 overflow-hidden"
                     >
                         <!-- Area Header -->
-                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-50 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                                 {{ areaName }}
-                                <span class="ml-2 text-sm font-normal text-gray-500">
+                                <span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                                     ({{ Object.keys(accessories).length }} accessor{{ Object.keys(accessories).length !== 1 ? 'ies' : 'y' }})
                                 </span>
                             </h3>
@@ -209,14 +263,14 @@
                                 <div 
                                     v-for="(characteristics, accessoryName) in accessories" 
                                     :key="accessoryName"
-                                    class="bg-gray-50 rounded-lg p-4 border border-gray-200"
+                                    class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600"
                                 >
                                     <!-- Accessory Header -->
                                     <div class="mb-3">
-                                        <h4 class="text-sm font-semibold text-gray-800 flex items-center">
-                                            <span v-html="getAccessoryIcon(characteristics[0].icon)" class="w-4 h-4 mr-2 text-amber-500"></span>
+                                        <h4 class="text-sm font-semibold text-gray-800 dark:text-gray-100 flex items-center">
+                                            <span v-html="getAccessoryIcon(characteristics[0].icon)" class="w-4 h-4 mr-2 text-amber-500 dark:text-amber-400"></span>
                                             {{ accessoryName }}
-                                            <span class="ml-2 text-xs font-normal text-gray-500">
+                                            <span class="ml-2 text-xs font-normal text-gray-500 dark:text-gray-400">
                                                 ({{ characteristics.length }})
                                             </span>
                                         </h4>
@@ -227,16 +281,16 @@
                                         <div 
                                             v-for="(typeCharacteristics, characteristicType) in groupCharacteristicsByType(characteristics)" 
                                             :key="characteristicType"
-                                            class="bg-white rounded-lg p-3 border border-gray-200 hover:bg-gray-50 transition-colors"
+                                            class="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                         >
                                         <!-- Characteristic Header -->
                                         <div class="flex items-center justify-between mb-2">
-                                            <h5 class="text-sm font-medium text-gray-800 truncate">{{ characteristicType }}</h5>
+                                            <h5 class="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{{ characteristicType }}</h5>
                                             <div class="flex items-center">
-                                                <button v-if="typeCharacteristics.length === 1" @click="showCharacteristicLog(typeCharacteristics[0])" class="text-xs text-gray-400 hover:text-amber-500">
+                                                <button v-if="typeCharacteristics.length === 1" @click="showCharacteristicLog(typeCharacteristics[0])" class="text-xs text-gray-400 hover:text-amber-500 dark:hover:text-amber-400">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                                                 </button>
-                                                <span v-if="typeCharacteristics.length > 1" class="ml-2 text-xs text-gray-500 bg-gray-200 px-2 py-1 rounded-full">
+                                                <span v-if="typeCharacteristics.length > 1" class="ml-2 text-xs text-gray-500 bg-gray-200 dark:bg-gray-600 dark:text-gray-300 px-2 py-1 rounded-full">
                                                     {{ typeCharacteristics.length }}
                                                 </span>
                                             </div>
@@ -246,9 +300,9 @@
                                         <div v-if="typeCharacteristics.length === 1">
                                             <!-- Read-only characteristics -->
                                             <div v-if="isReadOnly(characteristicType)" class="text-center py-2">
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-white text-gray-800 border border-gray-300">
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600">
                                                     {{ typeCharacteristics[0].value }}
-                                                    <span v-if="getUnit(characteristicType)" class="ml-1 text-xs text-gray-500">
+                                                    <span v-if="getUnit(characteristicType)" class="ml-1 text-xs text-gray-500 dark:text-gray-400">
                                                         {{ getUnit(characteristicType) }}
                                                     </span>
                                                 </span>
@@ -261,7 +315,7 @@
                                                     :key="option.value"
                                                     @click="updateCharacteristic(typeCharacteristics[0].id, option.value)"
                                                     :class="typeCharacteristics[0].value === option.value ? 
-                                                        'bg-amber-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-gray-200 border border-gray-300'"
+                                                        'bg-amber-600 text-white shadow-sm' : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-500'"
                                                     class="flex-1 py-2 px-3 text-xs font-medium rounded transition-all duration-200"
                                                 >
                                                     {{ option.label }}
@@ -271,7 +325,7 @@
                                             <!-- Range controls -->
                                             <div v-else-if="isRangeType(characteristicType)" class="space-y-2">
                                                 <div class="text-center">
-                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400">
                                                         {{ Math.round(typeCharacteristics[0].value) }}
                                                         <span v-if="getUnit(characteristicType)" class="ml-1 text-xs">
                                                             {{ getUnit(characteristicType) }}
@@ -282,16 +336,16 @@
                                                     <button
                                                         @click="updateCharacteristic(typeCharacteristics[0].id, String(Math.max(typeCharacteristics[0].min, parseInt(typeCharacteristics[0].value) - 1)))"
                                                         :disabled="parseInt(typeCharacteristics[0].value) <= typeCharacteristics[0].min"
-                                                        class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-lg font-bold select-none"
+                                                        class="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-lg font-bold select-none"
                                                         style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
                                                     >
                                                         -
                                                     </button>
-                                                    <span class="text-xs text-gray-500 min-w-[3rem] text-center">{{ typeCharacteristics[0].min }} - {{ typeCharacteristics[0].max }}</span>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400 min-w-[3rem] text-center">{{ typeCharacteristics[0].min }} - {{ typeCharacteristics[0].max }}</span>
                                                     <button
                                                         @click="updateCharacteristic(typeCharacteristics[0].id, String(Math.min(typeCharacteristics[0].max, parseInt(typeCharacteristics[0].value) + 1)))"
                                                         :disabled="parseInt(typeCharacteristics[0].value) >= typeCharacteristics[0].max"
-                                                        class="w-10 h-10 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-lg font-bold select-none"
+                                                        class="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-lg font-bold select-none"
                                                         style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
                                                     >
                                                         +
@@ -304,7 +358,7 @@
                                                 <select
                                                     :value="typeCharacteristics[0].value"
                                                     @change="updateCharacteristic(typeCharacteristics[0].id, $event.target.value)"
-                                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                                    class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                                 >
                                                     <option 
                                                         v-for="option in getDropdownOptions(characteristicType)" 
@@ -322,18 +376,18 @@
                                             <div 
                                                 v-for="characteristic in typeCharacteristics" 
                                                 :key="characteristic.id"
-                                                class="bg-white rounded p-2 border border-gray-200"
+                                                class="bg-white dark:bg-gray-900/50 rounded p-2 border border-gray-200 dark:border-gray-600"
                                             >
-                                                <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                                                <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
                                                     <span>#{{ characteristic.id }}</span>
-                                                    <button @click="showCharacteristicLog(characteristic)" class="text-xs text-gray-400 hover:text-amber-500">
+                                                    <button @click="showCharacteristicLog(characteristic)" class="text-xs text-gray-400 hover:text-amber-500 dark:hover:text-amber-400">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                                                     </button>
                                                 </div>
                                                 
                                                 <!-- Read-only characteristics -->
                                                 <div v-if="isReadOnly(characteristicType)" class="text-center">
-                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                    <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100">
                                                         {{ characteristic.value }}
                                                         <span v-if="getUnit(characteristicType)" class="ml-1">
                                                             {{ getUnit(characteristicType) }}
@@ -348,7 +402,7 @@
                                                         :key="option.value"
                                                         @click="updateCharacteristic(characteristic.id, option.value)"
                                                         :class="characteristic.value === option.value ? 
-                                                            'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                                            'bg-amber-600 text-white' : 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-500'"
                                                         class="flex-1 py-1 px-2 text-xs font-medium rounded transition-colors"
                                                     >
                                                         {{ option.label }}
@@ -362,7 +416,7 @@
                                                         <button
                                                             @click="updateCharacteristic(characteristic.id, String(Math.max(characteristic.min, parseInt(characteristic.value) - 1)))"
                                                             :disabled="parseInt(characteristic.value) <= characteristic.min"
-                                                            class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-sm font-bold select-none"
+                                                            class="w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-sm font-bold select-none"
                                                             style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
                                                         >
                                                             -
@@ -370,7 +424,7 @@
                                                         <button
                                                             @click="updateCharacteristic(characteristic.id, String(Math.min(characteristic.max, parseInt(characteristic.value) + 1)))"
                                                             :disabled="parseInt(characteristic.value) >= characteristic.max"
-                                                            class="w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-sm font-bold select-none"
+                                                            class="w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-full text-sm font-bold select-none"
                                                             style="touch-action: manipulation; -webkit-user-select: none; -webkit-touch-callout: none;"
                                                         >
                                                             +
@@ -383,7 +437,7 @@
                                                     <select
                                                         :value="characteristic.value"
                                                         @change="updateCharacteristic(characteristic.id, $event.target.value)"
-                                                        class="w-full px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
+                                                        class="w-full px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-xs focus:outline-none focus:ring-1 focus:ring-amber-500"
                                                     >
                                                         <option 
                                                             v-for="option in getDropdownOptions(characteristicType)" 
@@ -406,8 +460,8 @@
 
             <!-- Automations Tab -->
             <section v-show="activeTab === 'automations'">
-                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     Automations
@@ -418,16 +472,16 @@
                     <div 
                         v-for="(automations, groupName) in groupedAutomations" 
                         :key="groupName"
-                        class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden"
+                        class="bg-white dark:bg-gray-800 rounded-lg card-shadow border border-gray-200 dark:border-gray-700 overflow-hidden"
                     >
                         <!-- Group Header -->
-                        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                            <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-50 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 {{ groupName }}
-                                <span class="ml-2 text-sm font-normal text-gray-500">
+                                <span class="ml-2 text-sm font-normal text-gray-500 dark:text-gray-400">
                                     ({{ automations.length }} automation{{ automations.length !== 1 ? 's' : '' }})
                                 </span>
                             </h3>
@@ -447,12 +501,12 @@
                                 <div 
                                     v-for="automation in automations" 
                                     :key="automation.id"
-                                    class="bg-gray-50 rounded-lg card-shadow card-shadow-hover p-4 border border-gray-200"
+                                    class="bg-gray-50 dark:bg-gray-700/50 rounded-lg card-shadow card-shadow-hover p-4 border border-gray-200 dark:border-gray-600"
                                 >
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-sm font-medium text-gray-900 truncate">{{ automation.name }}</h3>
-                                <p class="text-xs text-gray-500 mt-1">#{{ automation.id }}</p>
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-50 truncate">{{ automation.name }}</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">#{{ automation.id }}</p>
                             </div>
                             <div class="ml-4 flex items-center">
                                 <button
@@ -466,9 +520,9 @@
                                         type="checkbox"
                                         :checked="automation.enabled"
                                         @change="updateAutomation(automation.id, $event.target.checked)"
-                                        class="rounded border-gray-300 text-amber-600 shadow-sm focus:border-amber-300 focus:ring focus:ring-amber-200 focus:ring-opacity-50"
+                                        class="rounded border-gray-300 dark:border-gray-600 text-amber-600 shadow-sm focus:border-amber-300 focus:ring focus:ring-amber-200 focus:ring-opacity-50 dark:bg-gray-700"
                                     >
-                                    <span class="ml-2 text-sm" :class="automation.enabled ? 'text-green-600 font-medium' : 'text-gray-500'">
+                                    <span class="ml-2 text-sm" :class="automation.enabled ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400'">
                                         {{ automation.enabled ? 'Enabled' : 'Disabled' }}
                                     </span>
                                 </label>
@@ -477,29 +531,29 @@
                         
                                     <div class="space-y-3 text-sm">
                                         <div class="hidden md:block">
-                                            <p class="text-gray-500 font-medium mb-1">Command</p>
-                                            <code class="block bg-gray-50 p-2 rounded text-xs text-gray-700 break-all">{{ automation.cmd }}</code>
+                                            <p class="text-gray-500 dark:text-gray-400 font-medium mb-1">Command</p>
+                                            <code class="block bg-gray-50 dark:bg-gray-900/50 p-2 rounded text-xs text-gray-700 dark:text-gray-300 break-all">{{ automation.cmd }}</code>
                                         </div>
                                         
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <p class="text-gray-500 font-medium mb-1">Schedule</p>
-                                                <p class="text-gray-700">{{ automation.cron }} ± {{ automation.tolerance }}s</p>
+                                                <p class="text-gray-500 dark:text-gray-400 font-medium mb-1">Schedule</p>
+                                                <p class="text-gray-700 dark:text-gray-300">{{ automation.cron }} ± {{ automation.tolerance }}s</p>
                                             </div>
                                             <div>
-                                                <p class="text-gray-500 font-medium mb-1">Next Run</p>
-                                                <p class="text-gray-700">{{ formatDate(automation.next_run) || 'N/A' }}</p>
+                                                <p class="text-gray-500 dark:text-gray-400 font-medium mb-1">Next Run</p>
+                                                <p class="text-gray-700 dark:text-gray-300">{{ formatDate(automation.next_run) || 'N/A' }}</p>
                                             </div>
                                         </div>
                                         
                                         <div>
-                                            <p class="text-gray-500 font-medium mb-1">Last Run</p>
-                                            <p class="text-gray-700">{{ formatDate(automation.last_run) || 'Never' }}</p>
+                                            <p class="text-gray-500 dark:text-gray-400 font-medium mb-1">Last Run</p>
+                                            <p class="text-gray-700 dark:text-gray-300">{{ formatDate(automation.last_run) || 'Never' }}</p>
                                         </div>
                                         
-                                        <div v-if="automation.last_error" class="bg-red-50 border border-red-200 rounded p-2">
-                                            <p class="text-red-600 font-medium text-xs mb-1">Last Error</p>
-                                            <p class="text-red-800 text-xs">{{ automation.last_error }}</p>
+                                        <div v-if="automation.last_error" class="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800/50 rounded p-2">
+                                            <p class="text-red-600 dark:text-red-400 font-medium text-xs mb-1">Last Error</p>
+                                            <p class="text-red-800 dark:text-red-300 text-xs">{{ automation.last_error }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -511,8 +565,8 @@
 
             <!-- Action Log Tab -->
             <section v-show="activeTab === 'action_logs'">
-                <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                     </svg>
                     Action Log
@@ -522,31 +576,31 @@
                 </div>
                 <div class="mb-4">
                     <div class="flex items-center">
-                        <select v-model="entityIdFilter" @change="fetchActionLogs" class="flex-grow px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+                        <select v-model="entityIdFilter" @change="fetchActionLogs" class="flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-white">
                             <option value="">All</option>
                             <option v-for="entityId in entityIds" :key="entityId" :value="entityId">{{ formatActionLogEntityId(entityId) }}</option>
                         </select>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg card-shadow border border-gray-200 overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 rounded-lg card-shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Value</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Entity ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">New Value</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Timestamp</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr v-for="log in actionLogs" :key="log.id">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.id }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatActionLogEntityId(log.entity_id) }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.characteristic_type }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.new_value }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ formatDate(log.timestamp) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ log.id }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ formatActionLogEntityId(log.entity_id) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ log.characteristic_type }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ log.new_value }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ formatDate(log.timestamp) }}</td>
                                 </tr>
                             </tbody>
                         </table>
