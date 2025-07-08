@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bradhe/cadence"
@@ -20,6 +22,7 @@ type AutomationRunner struct {
 	LastError error
 	NextRun   time.Time
 	ActionLog *actionlog.ActionLog
+	NtfyTopic string
 }
 
 func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
@@ -48,6 +51,7 @@ func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
 					r.LastRun = time.Now()
 					r.LastError = err
 					r.ActionLog.LogAction(fmt.Sprintf("Automation %d", r.Config.Id), "automation_run", "success")
+					r.sendNtfyNotification()
 				} else {
 					slog.Info("[Automation] Skipping automtion task", "name", r.Config.Name, "cmd", r.Config.Cmd)
 				}
@@ -56,6 +60,22 @@ func (r *AutomationRunner) Start(t time.Time, ctx context.Context) {
 			}
 		})
 	}()
+}
+
+func (r *AutomationRunner) sendNtfyNotification() {
+	if r.NtfyTopic == "" {
+		return
+	}
+
+	slog.Info("[Automation] Sending ntfy notification", "name", r.Config.Name, "topic", r.NtfyTopic)
+	_, err := http.Post(
+		fmt.Sprintf("https://ntfy.sh/%s", r.NtfyTopic),
+		"text/plain",
+		strings.NewReader(fmt.Sprintf("Automation %s executed", r.Config.Name)),
+	)
+	if err != nil {
+		slog.Error("[Automation] Failed to send ntfy notification", "name", r.Config.Name, "err", err)
+	}
 }
 
 func nextRunTime(cron string, offset int, ref time.Time) (time.Time, time.Time, error) {

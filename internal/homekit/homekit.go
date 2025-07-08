@@ -76,7 +76,7 @@ func new(cfgDir string, dbPath string) *HMManager {
 	
 	cfg := config.Parse(cfgDir, dbPath, actionLog)
 	root := parseConfig(&cfg, actionLog)
-	automations := automationRunnersFromConfig(cfg.Automations, actionLog)
+	automations := automationRunnersFromConfig(cfg.Automations, &cfg.Ntfy, actionLog)
 
 	var w = slog.Info
 	w("[Config] Bridge: ", "name", root.b.Name())
@@ -86,6 +86,9 @@ func new(cfgDir string, dbPath string) *HMManager {
 	w("[Config] Automations:")
 	for _, a := range automations {
 		w("[Config]   Rule", "name", a.Config.Name, "cmd", a.Config.Cmd, "cron", a.Config.Cron, "offset", a.Config.Offset)
+	}
+	if cfg.Ntfy.Topic != "" {
+		w("[Config] Ntfy Topic: ", "topic", cfg.Ntfy.Topic)
 	}
 
 	store := hap.NewFsStore(dbPath)

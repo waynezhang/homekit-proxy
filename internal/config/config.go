@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/spf13/viper"
@@ -10,9 +11,14 @@ import (
 
 type Config struct {
 	Bridge      BridgeConfig
+	Ntfy        NtfyConfig
 	Accessories []*AccessoriesConfig
 	Automations []*AutomationConfig
 	actionLog   *actionlog.ActionLog
+}
+
+type NtfyConfig struct {
+	Topic string
 }
 
 type BridgeConfig struct {
@@ -75,6 +81,10 @@ func Parse(configDir string, directory string, actionLog *actionlog.ActionLog) C
 	config.Bridge = deviceConfig.Bridge
 	config.Accessories = deviceConfig.Accessories
 
+	if ntfyTopic := os.Getenv("HOMEKIT_PROXY_NTFY_TOPIC"); ntfyTopic != "" {
+		config.Ntfy.Topic = ntfyTopic
+	}
+
 	// Parse automation.yaml
 	automationFile := filepath.Join(configDir, "automation.yaml")
 	vAutomation := viper.New()
@@ -109,3 +119,4 @@ func (cfg *Config) SetAutomationEnabled(id int, enabled bool) {
 		}
 	}
 }
+
