@@ -62,7 +62,7 @@ func (am *AuthManager) Login(username, password string) (string, error) {
 	token := base64.URLEncoding.EncodeToString(tokenBytes)
 	am.sessions[token] = &Session{
 		Token:     token,
-		ExpiresAt: time.Now().Add(24 * time.Hour), // 24 hour session
+		ExpiresAt: time.Time{}, // No expiration
 	}
 	
 	// Clean up expired sessions
@@ -86,7 +86,7 @@ func (am *AuthManager) ValidateSession(token string) bool {
 		return false
 	}
 	
-	if time.Now().After(session.ExpiresAt) {
+	if !session.ExpiresAt.IsZero() && time.Now().After(session.ExpiresAt) {
 		delete(am.sessions, token)
 		return false
 	}
@@ -106,7 +106,7 @@ func (am *AuthManager) Logout(token string) {
 func (am *AuthManager) cleanupExpiredSessions() {
 	now := time.Now()
 	for token, session := range am.sessions {
-		if now.After(session.ExpiresAt) {
+		if !session.ExpiresAt.IsZero() && now.After(session.ExpiresAt) {
 			delete(am.sessions, token)
 		}
 	}
