@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/bradhe/cadence v0.1.0
-	github.com/mattn/go-sqlite3 v1.14.30
+	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/radovskyb/watcher v1.0.7
 	github.com/spf13/cobra v1.9.1
 )
