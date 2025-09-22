@@ -1,5 +1,5 @@
-github.com/bradhe/cadence v0.1.0 h1:cZQpzsZ2IJ3/3PmEGYLoGEWNT/OK5WyP/e7TvEVao0g=
-github.com/bradhe/cadence v0.1.0/go.mod h1:v1j06NhEorRHm/Xn3odEi+sOpPUzsi4BNSqrcMweoVA=
+github.com/bradhe/cadence v0.1.1 h1:GX7fvrE2QP9yrsNjQIXjqAlb+QYu4XXIRsvIPqokjwk=
+github.com/bradhe/cadence v0.1.1/go.mod h1:v1j06NhEorRHm/Xn3odEi+sOpPUzsi4BNSqrcMweoVA=
 github.com/brutella/dnssd v1.2.14 h1:qLpTnRTm5peo2jA30hqMIbCuWn8x3sFg3e9o9ODOobw=
 github.com/brutella/dnssd v1.2.14/go.mod h1:tG4GE8orv6+irE5rdsNgb6MJSxm6cyMUKdC5jmD22gk=
 github.com/brutella/hap v0.0.35 h1:9J6jWnrlnZGJIdskYdkRt8EGfEoIe2sMqc6qBNQTnAM=
