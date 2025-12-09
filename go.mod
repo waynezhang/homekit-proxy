@@ -6,7 +6,7 @@ require (
 	github.com/bradhe/cadence v0.1.2
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/radovskyb/watcher v1.0.7
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 )
 
 require (
