@@ -104,7 +104,7 @@ func Parse(configDir string, directory string, actionLog *actionlog.ActionLog) C
 
 	// Load automation enabled state from action log
 	for _, a := range config.Automations {
-		a.Enabled = actionLog.GetAutomationEnabled(a.Id, true)
+		a.Enabled = actionLog.GetAutomationEnabled(a.Id, false)
 	}
 
 	return config
@@ -119,4 +119,3 @@ func (cfg *Config) SetAutomationEnabled(id int, enabled bool) {
 		}
 	}
 }
-
