@@ -1,13 +1,13 @@
 automations:
   - id: 1
     name: "A sample automation work"
-    cron: "0 * * * * *"
+    cron: "0 * * * *"
     cmd: "echo 'Some every minute automation'"
     offset: 0
     group: "General"
   - id: 5
     name: "Another automation work"
-    cron: "0 * * * * *"
+    cron: "0 * * * *"
     cmd: "echo 'Running something other'"
     offset: 0
     group: "Other"

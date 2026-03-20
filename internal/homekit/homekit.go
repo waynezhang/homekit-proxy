@@ -73,7 +73,7 @@ func new(cfgDir string, dbPath string) *HMManager {
 	actionLogPath := filepath.Join(dbPath, "action_log.db")
 	actionLog, err := actionlog.New(actionLogPath)
 	utils.CheckFatalError(err, "[ActionLog] Failed to initialize action log")
-	
+
 	cfg := config.Parse(cfgDir, dbPath, actionLog)
 	root := parseConfig(&cfg, actionLog)
 	automations := automationRunnersFromConfig(cfg.Automations, &cfg.Ntfy, actionLog)
@@ -154,9 +154,6 @@ func (m *HMManager) runAutomation(id int) error {
 }
 
 func (m *HMManager) stop() {
-	if m.actionLog != nil {
-		m.actionLog.Close()
-	}
 	m.cancel()
 }
 
