@@ -12,7 +12,7 @@ import (
 )
 
 type ActionLog struct {
-	dbPath string
+	db *sql.DB
 }
 
 type LogEntry struct {
@@ -29,31 +29,21 @@ func New(dbPath string) (*ActionLog, error) {
 		return nil, fmt.Errorf("failed to create db directory: %w", err)
 	}
 
-	al := &ActionLog{dbPath: dbPath}
-
-	// Initialize schema once
-	db, err := al.openDB()
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-	defer db.Close()
 
-	if err := al.initSchemaWithDB(db); err != nil {
+	al := &ActionLog{db: db}
+	if err := al.initSchema(); err != nil {
+		db.Close()
 		return nil, fmt.Errorf("failed to initialize schema: %w", err)
 	}
 
 	return al, nil
 }
 
-func (al *ActionLog) openDB() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", al.dbPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
-	}
-	return db, nil
-}
-
-func (al *ActionLog) initSchemaWithDB(db *sql.DB) error {
+func (al *ActionLog) initSchema() error {
 	query := `
 	CREATE TABLE IF NOT EXISTS action_logs (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,13 +52,13 @@ func (al *ActionLog) initSchemaWithDB(db *sql.DB) error {
 		new_value TEXT,
 		timestamp DATETIME NOT NULL
 	);
-
+	
 	CREATE INDEX IF NOT EXISTS idx_entity_id ON action_logs(entity_id);
 	CREATE INDEX IF NOT EXISTS idx_timestamp ON action_logs(timestamp);
 	CREATE INDEX IF NOT EXISTS idx_characteristic_type ON action_logs(characteristic_type);
 	`
 
-	if _, err := db.Exec(query); err != nil {
+	if _, err := al.db.Exec(query); err != nil {
 		return fmt.Errorf("failed to create schema: %w", err)
 	}
 
@@ -76,12 +66,6 @@ func (al *ActionLog) initSchemaWithDB(db *sql.DB) error {
 }
 
 func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) error {
-	db, err := al.openDB()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
 	if characteristicType != "automation_run" {
 		// Check if the new value is the same as the last logged value
 		lastValueQuery := `
@@ -92,7 +76,7 @@ func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) er
 		`
 
 		var lastValue string
-		err := db.QueryRow(lastValueQuery, entityID, characteristicType).Scan(&lastValue)
+		err := al.db.QueryRow(lastValueQuery, entityID, characteristicType).Scan(&lastValue)
 		if err == nil && lastValue == newValue {
 			slog.Debug("[ActionLog] Skipping duplicate value", "entityID", entityID, "type", characteristicType, "value", newValue)
 			return nil
@@ -104,7 +88,7 @@ func (al *ActionLog) LogAction(entityID, characteristicType, newValue string) er
 	VALUES (?, ?, ?, ?)
 	`
 
-	_, err = db.Exec(query, entityID, characteristicType, newValue, time.Now())
+	_, err := al.db.Exec(query, entityID, characteristicType, newValue, time.Now())
 	if err != nil {
 		slog.Error("[ActionLog] Failed to log action", "error", err, "entityID", entityID, "type", characteristicType)
 		return fmt.Errorf("failed to log action: %w", err)
@@ -124,15 +108,9 @@ func (al *ActionLog) LogAutomationEnabled(automationID int, enabled bool) error 
 }
 
 func (al *ActionLog) GetAutomationEnabled(automationID int, defaultValue bool) bool {
-	db, err := al.openDB()
-	if err != nil {
-		return defaultValue
-	}
-	defer db.Close()
-
 	entityID := fmt.Sprintf("Automation %d", automationID)
 	var value string
-	err = db.QueryRow("SELECT new_value FROM action_logs WHERE entity_id = ? AND characteristic_type = 'automation' ORDER BY timestamp DESC LIMIT 1", entityID).Scan(&value)
+	err := al.db.QueryRow("SELECT new_value FROM action_logs WHERE entity_id = ? AND characteristic_type = 'automation' ORDER BY timestamp DESC LIMIT 1", entityID).Scan(&value)
 	if err != nil {
 		// No record found, return default
 		return defaultValue
@@ -142,12 +120,6 @@ func (al *ActionLog) GetAutomationEnabled(automationID int, defaultValue bool) b
 }
 
 func (al *ActionLog) GetRecentLogs(limit int) ([]LogEntry, error) {
-	db, err := al.openDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	query := `
 	SELECT id, entity_id, characteristic_type, new_value, timestamp
 	FROM action_logs
@@ -155,7 +127,7 @@ func (al *ActionLog) GetRecentLogs(limit int) ([]LogEntry, error) {
 	LIMIT ?
 	`
 
-	rows, err := db.Query(query, limit)
+	rows, err := al.db.Query(query, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query logs: %w", err)
 	}
@@ -178,12 +150,6 @@ func (al *ActionLog) GetRecentLogs(limit int) ([]LogEntry, error) {
 }
 
 func (al *ActionLog) GetLogsByEntity(entityID string, limit int) ([]LogEntry, error) {
-	db, err := al.openDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	query := `
 	SELECT id, entity_id, characteristic_type, new_value, timestamp
 	FROM action_logs
@@ -192,7 +158,7 @@ func (al *ActionLog) GetLogsByEntity(entityID string, limit int) ([]LogEntry, er
 	LIMIT ?
 	`
 
-	rows, err := db.Query(query, entityID, limit)
+	rows, err := al.db.Query(query, entityID, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query logs: %w", err)
 	}
@@ -215,12 +181,6 @@ func (al *ActionLog) GetLogsByEntity(entityID string, limit int) ([]LogEntry, er
 }
 
 func (al *ActionLog) GetLogsByEntityAndCharacteristicType(entityID, characteristicType string, limit int) ([]LogEntry, error) {
-	db, err := al.openDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	query := `
 	SELECT id, entity_id, characteristic_type, new_value, timestamp
 	FROM action_logs
@@ -229,7 +189,7 @@ func (al *ActionLog) GetLogsByEntityAndCharacteristicType(entityID, characterist
 	LIMIT ?
 	`
 
-	rows, err := db.Query(query, entityID, characteristicType, limit)
+	rows, err := al.db.Query(query, entityID, characteristicType, limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query logs: %w", err)
 	}
@@ -252,19 +212,13 @@ func (al *ActionLog) GetLogsByEntityAndCharacteristicType(entityID, characterist
 }
 
 func (al *ActionLog) GetDistinctEntityIDs() ([]string, error) {
-	db, err := al.openDB()
-	if err != nil {
-		return nil, err
-	}
-	defer db.Close()
-
 	query := `
 	SELECT DISTINCT entity_id
 	FROM action_logs
 	ORDER BY entity_id
 	`
 
-	rows, err := db.Query(query)
+	rows, err := al.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query distinct entity ids: %w", err)
 	}
@@ -280,4 +234,8 @@ func (al *ActionLog) GetDistinctEntityIDs() ([]string, error) {
 	}
 
 	return entityIDs, nil
+}
+
+func (al *ActionLog) Close() error {
+	return al.db.Close()
 }
