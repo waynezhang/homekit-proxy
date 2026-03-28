@@ -63,12 +63,13 @@ See `config/device.sample.yaml` and `config/automation.sample.yaml`.
 
 ## Environment Variables
 
-| Name                     | Description                                                                 |
-| ------------------------ | --------------------------------------------------------------------------- |
-| `HOMEKIT_PROXY_USER`     | The username for the web UI.                                                |
-| `HOMEKIT_PROXY_PASSWORD` | The password for the web UI.                                                |
-| `HOMEKIT_PROXY_BINDADDR` | The address and port to bind the HomeKit proxy to.                                   |
-| `HOMEKIT_PROXY_IFACE`    | The network interface to use for the HomeKit proxy.                         |
+| Name                       | Description                                                                 |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `HOMEKIT_PROXY_USER`       | Username for the web UI. Required to enable authentication.                 |
+| `HOMEKIT_PROXY_PASSWORD`   | Password for the web UI. Required to enable authentication.                 |
+| `HOMEKIT_PROXY_AUTH_TOKEN` | Static bearer token for API access. Used as a fallback to session auth.     |
+| `HOMEKIT_PROXY_BINDADDR`   | The address and port to bind the HomeKit proxy to.                          |
+| `HOMEKIT_PROXY_IFACE`      | The network interface to use for the HomeKit proxy.                         |
 | `HOMEKIT_PROXY_NTFY_TOPIC` | The ntfy.sh topic to send notifications to when an automation is triggered. |
 
 ## Web UI
