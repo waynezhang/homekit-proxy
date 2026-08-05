@@ -5,7 +5,6 @@ import (
 
 	"github.com/brutella/hap/characteristic"
 	"github.com/waynezhang/homekit-proxy/internal/config"
-	"github.com/waynezhang/homekit-proxy/internal/utils"
 )
 
 func init() {
@@ -25,7 +24,11 @@ func init() {
 		return c.C
 	})
 	registerConverterFromCommandLine(cType, func(v string) any {
-		return utils.ParseFloat(v)
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil
+		}
+		return f
 	})
 	registerConverterToCommandLine(cType, func(v any) string {
 		return strconv.FormatFloat(v.(float64), 'f', 2, 64)

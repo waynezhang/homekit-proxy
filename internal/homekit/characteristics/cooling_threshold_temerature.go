@@ -24,7 +24,10 @@ func init() {
 		return c.C
 	})
 	registerConverterFromCommandLine(cType, func(v string) any {
-		f, _ := strconv.ParseFloat(v, 64)
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil
+		}
 		return f
 	})
 	registerConverterToCommandLine(cType, func(v any) string {

@@ -41,7 +41,10 @@ func NewCharacteristicRunner(name string, area string, icon string, config *conf
 		}
 
 		param := ch.ConvertValueToCommandLine(new, r.Config.Type)
-		r.RunSetter(param)
+		if err := r.RunSetter(param); err != nil {
+			slog.Error("[Characteristcs] Setter failed, not logging action", "name", r.Name, "err", err)
+			return
+		}
 
 		r.ActionLog.LogAction(r.Name, r.Config.Type, param)
 	})
@@ -72,7 +75,11 @@ func (r *CharacteristicRunner) runGetter() {
 	slog.Info("[Characteristcs] Updating status of " + r.Name)
 
 	cmd := r.Config.Get
-	output, _ := utils.Exec(cmd)
+	output, err := utils.Exec(cmd)
+	if err != nil {
+		slog.Error("[Characteristcs] Getter failed, skipping update", "name", r.Name, "err", err)
+		return
+	}
 
 	val := ch.ParseValueFromCommandLine(output, r.Config.Type)
 	if val != nil {
@@ -88,9 +95,10 @@ func (r *CharacteristicRunner) runGetter() {
 	}
 }
 
-func (r *CharacteristicRunner) RunSetter(param string) {
+func (r *CharacteristicRunner) RunSetter(param string) error {
 	cmd := r.Config.Set + " " + param
-	utils.Exec(cmd)
+	_, err := utils.Exec(cmd)
+	return err
 }
 
 func (r *CharacteristicRunner) GetLastValue() any {
