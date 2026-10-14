@@ -664,6 +664,16 @@
     <script>
         const { createApp } = Vue;
 
+        // Wraps fetch for authenticated API calls: redirects to the login page when the session has expired.
+        async function apiFetch(url, options) {
+            const response = await fetch(url, options);
+            if (response.status === 401) {
+                window.location.href = '/login';
+                throw new Error('Session expired');
+            }
+            return response;
+        }
+
         createApp({
             data() {
                 return {
@@ -792,7 +802,7 @@
                 },
                 async fetchEntityIds() {
                     try {
-                        const response = await fetch('/s/action_logs/entities');
+                        const response = await apiFetch('/s/action_logs/entities');
                         if (!response.ok) throw new Error('Failed to fetch entity IDs');
                         this.entityIds = await response.json();
                     } catch (error) {
@@ -805,7 +815,7 @@
                         if (this.entityIdFilter) {
                             url += `?entity_id=${this.entityIdFilter}`;
                         }
-                        const response = await fetch(url);
+                        const response = await apiFetch(url);
                         if (!response.ok) throw new Error('Failed to fetch action logs');
                         this.actionLogs = await response.json();
                         this.renderChart();
@@ -835,7 +845,7 @@
 
                     if (this.entityIdFilter) {
                         try {
-                            const response = await fetch(`/s/action_logs?entity_id=${this.entityIdFilter}&characteristic_type=${characteristicType}`);
+                            const response = await apiFetch(`/s/action_logs?entity_id=${this.entityIdFilter}&characteristic_type=${characteristicType}`);
                             if (!response.ok) throw new Error('Failed to fetch chart data');
                             const fetchedData = await response.json();
                             if (fetchedData && fetchedData.length > 0) {
@@ -872,7 +882,7 @@
                 async refreshData() {
                     this.loading = true;
                     try {
-                        const response = await fetch('/s/all');
+                        const response = await apiFetch('/s/all');
                         if (!response.ok) throw new Error('Failed to fetch data');
                         this.data = await response.json();
                         this.alert.message = '';
@@ -885,7 +895,7 @@
                 
                 async updateCharacteristic(id, value) {
                     try {
-                        const response = await fetch(`/s/c/${id}`, {
+                        const response = await apiFetch(`/s/c/${id}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ value: value })
@@ -911,7 +921,7 @@
                 
                 async updateAutomation(id, enabled) {
                     try {
-                        const response = await fetch(`/s/a/${id}`, {
+                        const response = await apiFetch(`/s/a/${id}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ value: enabled.toString() })
@@ -936,7 +946,7 @@
 
                 async runAutomation(id) {
                     try {
-                        const response = await fetch(`/s/a/${id}/run`, {
+                        const response = await apiFetch(`/s/a/${id}/run`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                         });
@@ -1062,6 +1072,9 @@
                         const response = await fetch('/api/status');
                         if (response.ok) {
                             this.authStatus = await response.json();
+                            if (this.authStatus.enabled && !this.authStatus.authenticated) {
+                                window.location.href = '/login';
+                            }
                         }
                     } catch (error) {
                         console.warn('Failed to check auth status:', error);
